@@ -159,31 +159,78 @@ public class OperatorDetectionService implements IOperatorDetectionService {
     }
 
     private Operator detectByPrefix(String mobileNumber) {
-        // Simple prefix-based detection (first 4 digits)
         if (mobileNumber == null || mobileNumber.length() < 4) {
             return null;
         }
         
-        String prefix = mobileNumber.substring(0, 4);
+        // Clean number — keep last 10 digits
+        String cleaned = mobileNumber.replaceAll("\\D", "");
+        if (cleaned.length() > 10) {
+            cleaned = cleaned.substring(cleaned.length() - 10);
+        }
         
-        // Common prefixes and user test prefixes
-        if (prefix.equals("9999") || prefix.matches("(8888|7777)")) {
-            log.info("Prefix {} matched to JIO", prefix);
+        String p4 = cleaned.substring(0, 4); // first 4 digits
+        String p3 = cleaned.substring(0, 3); // first 3 digits
+        
+        // ── JIO prefixes (6xxx, 7xxx, 8xxx series allocated to Reliance Jio) ──
+        // Includes: 62xx, 63xx, 70xx-79xx, 80xx-89xx (many 8xx series are Jio)
+        if (p3.matches("(620|621|622|623|630|631|632|633|700|701|702|703|704|705|706|707|708|709)") ||
+            p3.matches("(710|711|712|713|714|715|716|717|718|719)") ||
+            p3.matches("(720|721|722|723|724|725|726|727|728|729)") ||
+            p3.matches("(730|731|732|733|734|735|736|737|738|739)") ||
+            p3.matches("(740|741|742|743|744|745|746|747|748|749)") ||
+            p3.matches("(750|751|752|753|754|755|756|757|758|759)") ||
+            p3.matches("(760|761|762|763|764|765|766|767|768|769)") ||
+            p3.matches("(770|771|772|773|774|775|776|777|778|779)") ||
+            p3.matches("(780|781|782|783|784|785|786|787|788|789)") ||
+            p3.matches("(790|791|792|793|794|795|796|797|798|799)") ||
+            p3.matches("(800|801|802|803|804|805|806|807|808|809)") ||
+            p3.matches("(810|811|812|813|814|815|816|817|818|819)") ||
+            p3.matches("(820|821|822|823|824|825|826|827|828|829)") ||
+            p3.matches("(830|831|832|833|834|835|836|837|838|839)") ||
+            p3.matches("(840|841|842|843|844|845|846|847|848|849)") ||
+            p3.matches("(850|851|852|853|854|855|856|857|858|859)") ||
+            p3.matches("(860|861|862|863|864|865|866|867|868|869)") ||
+            p3.matches("(870|871|872|873|874|875|876|877|878|879)") ||
+            p3.matches("(880|881|882|883|884|885|886|887|888|889)") ||
+            p3.matches("(890|891|892|893|894|895|896|897|898|899)") ||
+            p4.matches("(9999|6200|6300)")) {
+            log.info("Prefix {} matched to JIO", p3);
             return operatorRepository.findByCode("JIO").orElse(null);
-        } else if (prefix.equals("8688") || prefix.matches("(9876|9988|9910|9811)")) {
-            log.info("Prefix {} matched to AIRTEL", prefix);
+        }
+        
+        // ── AIRTEL prefixes (classic 9xxx series) ──
+        if (p4.matches("(9876|9988|9910|9811|9891|9818|9871|9873|9650|9560)") ||
+            p3.matches("(960|961|962|963|964|965|966|967|968|969)") ||
+            p3.matches("(970|971|972|973|974|975|976|977|978|979)") ||
+            p3.matches("(980|981|982|983|984|985|986|987|988|989)") ||
+            p3.matches("(990|991|992|993|994|995|996|997|998|999)")) {
+            log.info("Prefix {} matched to AIRTEL", p3);
             return operatorRepository.findByCode("AIRTEL").orElse(null);
-        } else if (prefix.matches("(9898|9090|8080)")) {
-            log.info("Prefix {} matched to VI", prefix);
+        }
+        
+        // ── VI (Vodafone-Idea) prefixes ──
+        if (p4.matches("(9898|9090|8080|9825|9925|9824|9374|7600|7201)") ||
+            p3.matches("(900|901|902|903|904|905|906|907|908|909)")) {
+            log.info("Prefix {} matched to VI", p3);
             return operatorRepository.findByCode("VI").orElse(null);
         }
         
-        // If no match, distribute deterministically based on the mobile number
+        // ── BSNL prefixes ──
+        if (p4.matches("(9449|9448|9446|9447|9400|9496|9495|9447)") ||
+            p3.matches("(944|945|946|947|948|949)")) {
+            log.info("Prefix {} matched to BSNL", p3);
+            return operatorRepository.findByCode("BSNL").orElse(null);
+        }
+        
+        // Fallback: distribute deterministically
         List<Operator> activeOperators = operatorRepository.findByIsActive(true);
         if (activeOperators.isEmpty()) return null;
         
         int hash = Math.abs(mobileNumber.hashCode());
-        return activeOperators.get(hash % activeOperators.size());
+        Operator fallback = activeOperators.get(hash % activeOperators.size());
+        log.info("No prefix match for {}, falling back to {}", p3, fallback.getName());
+        return fallback;
     }
     
     // Helper method for business operation logging
