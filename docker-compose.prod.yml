@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  config-server:
+    image: ghcr.io/rishith05/omnicharge/config-server:latest
+    build: null
+
+  eureka-server:
+    image: ghcr.io/rishith05/omnicharge/eureka-server:latest
+    build: null
+
+  api-gateway:
+    image: ghcr.io/rishith05/omnicharge/api-gateway:latest
+    build: null
+
+  user-service:
+    image: ghcr.io/rishith05/omnicharge/user-service:latest
+    build: null
+
+  operator-service:
+    image: ghcr.io/rishith05/omnicharge/operator-service:latest
+    build: null
+
+  recharge-service:
+    image: ghcr.io/rishith05/omnicharge/recharge-service:latest
+    build: null
+
+  payment-service:
+    image: ghcr.io/rishith05/omnicharge/payment-service:latest
+    build: null
+
+  notification-service:
+    image: ghcr.io/rishith05/omnicharge/notification-service:latest
+    build: null
+
+  logging-service:
+    image: ghcr.io/rishith05/omnicharge/logging-service:latest
+    build: null
+
+  omnicharge-frontend:
+    image: ghcr.io/rishith05/omnicharge/omnicharge-frontend:latest
+    build: null

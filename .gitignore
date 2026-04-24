@@ -1,0 +1,54 @@
+# ===== Environment Secrets =====
+!.env
+!.env.example
+
+# ===== Build Outputs =====
+target/
+*.jar
+*.war
+!.mvn/wrapper/maven-wrapper.jar
+
+# ===== IDE =====
+.idea/
+*.iws
+*.iml
+*.ipr
+.vscode/
+.classpath
+.project
+.settings/
+.factorypath
+
+# ===== Spring Tool Suite =====
+.apt_generated
+.springBeans
+.sts4-cache
+
+# ===== NetBeans =====
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# ===== Logs =====
+logs/
+*.log
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
+
+# ===== Maven =====
+.mvn/wrapper/maven-wrapper.jar
+
+# ===== Misc =====
+*.swp
+*.swo
+*~
+.env.local 
+.md
+/.metadata/

@@ -1,0 +1,152 @@
+name: OmniCharge CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME_PREFIX: ${{ github.repository_owner }}/omnicharge
+
+jobs:
+  # 1. Build Shared Library
+  build-common:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+      - name: Build OmniCharge Common
+        run: |
+          cd omnicharge-common
+          mvn clean install -DskipTests
+      - name: Upload Common Library
+        uses: actions/upload-artifact@v4
+        with:
+          name: omnicharge-common
+          path: ~/.m2/repository/com/omnicharge/omnicharge-common/
+
+  # 2. Build and Push Backend Microservices
+  build-backend:
+    needs: build-common
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        include:
+          - service: config-server
+            path: ./config-server
+          - service: eureka-server
+            path: ./discovery-server
+          - service: api-gateway
+            path: ./api-gateway
+          - service: user-service
+            path: ./user-service
+          - service: operator-service
+            path: ./operator-service
+          - service: recharge-service
+            path: ./recharge-service
+          - service: payment-service
+            path: ./payment-service
+          - service: notification-service
+            path: ./notification-service
+          - service: logging-service
+            path: ./logging-service
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+      
+      - name: Download Common Library
+        uses: actions/download-artifact@v4
+        with:
+          name: omnicharge-common
+          path: ~/.m2/repository/com/omnicharge/omnicharge-common/
+
+      - name: Build Service JAR
+        run: |
+          cd ${{ matrix.path }}
+          mvn clean package -DskipTests
+      
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ matrix.path }}
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PREFIX }}/${{ matrix.service }}:latest
+
+  # 3. Build and Push Frontend
+  build-frontend:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push Frontend Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./omnicharge-frontend
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PREFIX }}/omnicharge-frontend:latest
+
+  # 4. Deploy to Azure VM
+  deploy:
+    needs: [build-backend, build-frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Copy deployment files to VM
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.AZURE_VM_IP }}
+          username: azureuser
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "docker-compose.yml,docker-compose.prod.yml,.env.example"
+          target: "~/omnicharge/"
+
+      - name: SSH and Deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.AZURE_VM_IP }}
+          username: azureuser
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ~/omnicharge/
+            # Login to GHCR on the VM
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            # Pull latest images
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml pull
+            # Start/Update containers
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+            # Optional: Cleanup old images
+            docker image prune -f

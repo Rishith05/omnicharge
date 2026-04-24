@@ -1,0 +1,135 @@
+@use '@angular/material' as mat;
+
+// Custom OmniCharge Theme
+$omnicharge-primary: mat.m2-define-palette(mat.$m2-deep-purple-palette, 600, 400, 800);
+$omnicharge-accent: mat.m2-define-palette(mat.$m2-teal-palette, 500, 300, 700);
+$omnicharge-warn: mat.m2-define-palette(mat.$m2-red-palette, 600);
+
+$omnicharge-theme: mat.m2-define-dark-theme((
+  color: (
+    primary: $omnicharge-primary,
+    accent: $omnicharge-accent,
+    warn: $omnicharge-warn,
+  ),
+  typography: mat.m2-define-typography-config(
+    $font-family: '"Inter", "Roboto", "Helvetica Neue", sans-serif',
+  ),
+  density: 0,
+));
+
+@include mat.all-component-themes($omnicharge-theme);
+
+// Google Fonts
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+// CSS Variables
+:root {
+  --bg-primary: #0f0e17;
+  --bg-secondary: #1a1a2e;
+  --bg-card: rgba(26, 26, 46, 0.8);
+  --bg-glass: rgba(255, 255, 255, 0.05);
+  --text-primary: #fffffe;
+  --text-secondary: #a7a9be;
+  --accent-purple: #7f5af0;
+  --accent-teal: #2cb67d;
+  --accent-amber: #ff8906;
+  --gradient-primary: linear-gradient(135deg, #7f5af0 0%, #2cb67d 100%);
+  --gradient-card: linear-gradient(135deg, rgba(127, 90, 240, 0.1) 0%, rgba(44, 182, 125, 0.1) 100%);
+  --shadow-glow: 0 0 30px rgba(127, 90, 240, 0.15);
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --radius: 16px;
+  --radius-sm: 8px;
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+// Global Resets
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: 'Inter', 'Roboto', 'Helvetica Neue', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// Scrollbar
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--accent-purple);
+  border-radius: 3px;
+}
+
+// Global Material Overrides
+.mat-mdc-card {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius) !important;
+  backdrop-filter: blur(10px);
+}
+
+.mat-mdc-raised-button.mat-primary {
+  background: var(--gradient-primary) !important;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: var(--transition);
+}
+
+.mat-mdc-raised-button.mat-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow);
+}
+
+.mat-mdc-form-field {
+  width: 100%;
+}
+
+// Glassmorphism utility
+.glass {
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+}
+
+// Animation utilities
+.fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.slide-up {
+  animation: slideUp 0.6s ease-out;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+// Snackbar
+.mat-mdc-snack-bar-container {
+  &.success-snackbar .mdc-snackbar__surface {
+    background: #2cb67d !important;
+  }
+  &.error-snackbar .mdc-snackbar__surface {
+    background: #e53170 !important;
+  }
+}
