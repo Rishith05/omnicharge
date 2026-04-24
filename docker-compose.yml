@@ -285,6 +285,9 @@ services:
       - LOGGING_FALLBACK_DIRECTORY=/logs
       - TZ=Asia/Kolkata
       - JAVA_TOOL_OPTIONS=-Duser.timezone=Asia/Kolkata
+      - TWILIO_ACCOUNT_SID=${TWILIO_ACCOUNT_SID}
+      - TWILIO_AUTH_TOKEN=${TWILIO_AUTH_TOKEN}
+      - TWILIO_PHONE_NUMBER=${TWILIO_PHONE_NUMBER}
     depends_on:
       config-server:
         condition: service_healthy
