@@ -20,13 +20,13 @@ public class SmsService implements ISmsService {
 
     private final RedisTemplate<String, String> redisTemplate;
 
-    @Value("${twilio.account-sid:AC_NONE}")
+    @Value("${TWILIO_ACCOUNT_SID:AC_NONE}")
     private String accountSid;
 
-    @Value("${twilio.auth-token:NONE}")
+    @Value("${TWILIO_AUTH_TOKEN:NONE}")
     private String authToken;
 
-    @Value("${twilio.phone-number:+10000000000}")
+    @Value("${TWILIO_PHONE_NUMBER:+10000000000}")
     private String fromPhoneNumber;
 
     public SmsService(RedisTemplate<String, String> redisTemplate) {
