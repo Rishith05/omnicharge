@@ -7,7 +7,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME_PREFIX: ${{ github.repository_owner }}/omnicharge
+  IMAGE_NAME_PREFIX: rishith05/omnicharge
 
 jobs:
   # 1. Build Shared Library
