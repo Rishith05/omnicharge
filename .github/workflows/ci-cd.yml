@@ -142,11 +142,11 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd ~/omnicharge/
-            # Login to GHCR on the VM
-            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            # Login to GHCR on the VM using PAT
+            echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u rishith05 --password-stdin
             # Pull latest images
             docker compose -f docker-compose.yml -f docker-compose.prod.yml pull
             # Start/Update containers
             docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
-            # Optional: Cleanup old images
+            # Cleanup old images
             docker image prune -f
