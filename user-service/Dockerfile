@@ -1,21 +1,26 @@
-# Stage 1: Build the application
-FROM maven:3.9.6-eclipse-temurin-21-alpine AS build
-WORKDIR /app
-
-# Copy the pom.xml and source code
-COPY pom.xml .
-COPY src ./src
-
-# Build the application
-RUN mvn clean package -DskipTests
-
-# Stage 2: Run the application
+# Use official lightweight Java 21 image
 FROM eclipse-temurin:21-jre-alpine
+
+# Create spring user and group
+RUN addgroup -S spring && adduser -S spring -G spring
+
+# Install curl for healthchecks and create logs directory
 RUN apk add --no-cache curl && \
-    mkdir -p /logs
-WORKDIR /app
-COPY --from=build /app/target/*.jar app.jar
+    mkdir -p /logs && \
+    chown spring:spring /logs
+
+# Set fallback directory environment variable
+ENV LOGGING_FALLBACK_DIRECTORY=/logs
+
+# Set non-root user
+USER root
+
+# Optimize JVM settings inside container
+ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
+
+# Copy the pre-built JAR from the target directory
+ARG JAR_FILE=target/*.jar
+COPY ${JAR_FILE} app.jar
 
 # Run the application
-ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
-ENTRYPOINT ["sh", "-c", "java ${JAVA_OPTS} -jar app.jar"]
+ENTRYPOINT ["sh", "-c", "mkdir -p /logs && java ${JAVA_OPTS} -jar /app.jar"]
