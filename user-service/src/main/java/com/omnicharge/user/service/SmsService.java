@@ -35,6 +35,9 @@ public class SmsService implements ISmsService {
 
     @PostConstruct
     public void init() {
+        log.info("Checking Twilio Configuration... SID present: {}", 
+            (accountSid != null && !accountSid.equals("AC_NONE")));
+        
         if (accountSid != null && !accountSid.equals("AC_NONE")) {
             try {
                 Twilio.init(accountSid, authToken);
