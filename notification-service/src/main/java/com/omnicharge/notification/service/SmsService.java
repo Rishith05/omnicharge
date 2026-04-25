@@ -21,25 +21,35 @@ public class SmsService implements ISmsService {
 
     private final LogEventPublisher logEventPublisher;
 
-    @Value("${twilio.account.sid}")
+    @Value("${TWILIO_ACCOUNT_SID:AC_NONE}")
     private String accountSid;
 
-    @Value("${twilio.auth.token}")
+    @Value("${TWILIO_AUTH_TOKEN:NONE}")
     private String authToken;
 
-    @Value("${twilio.phone.number}")
+    @Value("${TWILIO_PHONE_NUMBER:+10000000000}")
     private String fromNumber;
 
     @PostConstruct
     public void init() {
-        // Initialize Twilio once when service starts
-        Twilio.init(accountSid, authToken);
-        log.info("Twilio SMS Service initialized with phone number: {}", fromNumber);
+        if (accountSid != null && !accountSid.equals("AC_NONE")) {
+            // Initialize Twilio once when service starts
+            Twilio.init(accountSid, authToken);
+            log.info("Twilio SMS Service initialized with phone number: {}", fromNumber);
+        } else {
+            log.warn("Twilio credentials NOT found. SMS service will be disabled.");
+        }
     }
+
 
     @Override
     public void sendSms(String mobileNumber, String message) {
         try {
+            if (accountSid == null || accountSid.equals("AC_NONE")) {
+                log.info("Twilio is disabled. Mock SMS to {}: {}", mobileNumber, message);
+                return;
+            }
+
             if (mobileNumber == null) {
                 throw new IllegalArgumentException("Mobile number cannot be null");
             }
