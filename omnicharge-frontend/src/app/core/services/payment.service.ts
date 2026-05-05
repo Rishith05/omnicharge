@@ -63,7 +63,7 @@ export class PaymentService {
   }): Promise<any> {
     return new Promise((resolve, reject) => {
       const razorpayOptions = {
-        key: (environment as any).razorpayKeyId || 'rzp_test_placeholder',
+        key: (environment as any).razorpayKeyId || 'rzp_live_SlZ6w1LdJA29oZ',
         amount: Math.round(options.amount * 100), // Razorpay expects paisa
         currency: options.currency || 'INR',
         name: options.name || 'OmniCharge',
@@ -99,13 +99,7 @@ export class PaymentService {
           });
           rzp.open();
         } else {
-          // Razorpay script not loaded — fall through to mock verification
-          console.warn('Razorpay SDK not loaded. Using mock payment flow.');
-          resolve({
-            razorpayPaymentId: 'pay_mock_' + Math.random().toString(36).substring(2, 12),
-            razorpayOrderId: options.orderId,
-            razorpaySignature: 'mock_signature'
-          });
+          reject(new Error('Razorpay SDK not loaded. Please check your internet connection and try again.'));
         }
       } catch (e) {
         reject(e);

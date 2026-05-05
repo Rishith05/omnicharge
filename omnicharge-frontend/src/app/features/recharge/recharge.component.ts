@@ -658,7 +658,6 @@ export class RechargeComponent implements OnInit, OnDestroy, HasUnsavedChanges {
         // SAGA Step 2: CREATE_ORDER
         const paymentPayload = {
           rechargeId: recharge.rechargeId,
-          userId: this.authService.getCurrentUser()?.id || 0,
           amount: Number(this.selectedPlan!.price),
           paymentMethod: 'RAZORPAY',
           userEmail: this.userEmail || 'user@omnicharge.com',
@@ -669,6 +668,18 @@ export class RechargeComponent implements OnInit, OnDestroy, HasUnsavedChanges {
         };
         this.paymentService.createOrder(paymentPayload).subscribe({
           next: (paymentRes) => {
+            // Check if backend returned a FAILED status (e.g. Razorpay API rejected the order)
+            if (paymentRes.status === 'FAILED' || !paymentRes.razorpayOrderId) {
+              console.error('Create Order returned FAILED:', paymentRes);
+              this.snackBar.open(
+                'Payment order creation failed. Please try again.',
+                'Close',
+                { duration: 5000, panelClass: ['error-snackbar'] }
+              );
+              this.sagaCompensate('ORDER', recharge, '');
+              return;
+            }
+
             this.sagaStepsCompleted.push('ORDER');
             this.sagaStep = 'CHECKOUT';
             this.cdr.markForCheck();
@@ -738,6 +749,8 @@ export class RechargeComponent implements OnInit, OnDestroy, HasUnsavedChanges {
           },
           error: (err) => {
             console.error('Create Order failed:', err);
+            const errorMsg = err.error?.message || err.message || 'Payment order creation failed';
+            this.snackBar.open(errorMsg, 'Close', { duration: 5000, panelClass: ['error-snackbar'] });
             this.sagaCompensate('ORDER', recharge, '');
           }
         });

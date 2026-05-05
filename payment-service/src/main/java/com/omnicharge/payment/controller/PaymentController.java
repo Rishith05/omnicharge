@@ -32,7 +32,7 @@ public class PaymentController {
             @RequestHeader("X-User-Id") Long authenticatedUserId) {
         
         // Security: Verify the authenticated user matches the request (if provided)
-        if (request.getUserId() != null && !request.getUserId().equals(authenticatedUserId)) {
+        if (request.getUserId() != null && request.getUserId() > 0 && !request.getUserId().equals(authenticatedUserId)) {
             return ResponseEntity.badRequest()
                     .body(ApiResponse.error("Unauthorized: Cannot create payment for another user"));
         }

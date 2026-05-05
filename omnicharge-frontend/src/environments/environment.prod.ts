@@ -1,6 +1,6 @@
 export const environment = {
   production: true,
-  apiUrl: '/api',
+  apiUrl: '',
   useMockApi: false,
-  razorpayKeyId: 'rzp_live_SUvKCS3WVGspwp'
+  razorpayKeyId: 'rzp_live_SlZ6w1LdJA29oZ'
 };

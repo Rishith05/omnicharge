@@ -19,7 +19,6 @@ public class PaymentRequest {
     @NotBlank(message = "Recharge ID is required")
     private String rechargeId;
 
-    @NotNull(message = "User ID is required")
     private Long userId;
 
     @NotNull(message = "Amount is required")

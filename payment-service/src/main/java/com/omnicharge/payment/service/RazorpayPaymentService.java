@@ -39,18 +39,6 @@ public class RazorpayPaymentService implements IRazorpayPaymentService {
         String transactionId = "TXN-" + UUID.randomUUID().toString().substring(0, 10).toUpperCase();
 
         try {
-            // Dev/Test Mode Bypass: If using mock keys, don't call real Razorpay API
-            if (keyId == null || keyId.equals("rzp_test_mock") || keyId.startsWith("rzp_test_")) {
-                log.info("Razorpay Dev Mode: Simulating successful order creation for recharge: {}", request.getRechargeId());
-                String orderId = "order_" + UUID.randomUUID().toString().substring(0, 10);
-                return PaymentResponse.builder()
-                        .transactionId(transactionId)
-                        .status("PENDING")
-                        .razorpayOrderId(orderId)
-                        .amount(request.getAmount())
-                        .timestamp(LocalDateTime.now())
-                        .build();
-            }
 
             RazorpayClient razorpay = new RazorpayClient(keyId, keySecret);
 
