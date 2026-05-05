@@ -159,6 +159,51 @@ class RechargeServiceCoverageTest {
     }
 
     @Test
+    void confirmRecharge_AlreadyProcessed_ReturnsExisting() {
+        sampleRecharge.setStatus(RechargeStatus.SUCCESS);
+        when(rechargeRepository.findByRechargeId("RECH-123")).thenReturn(Optional.of(sampleRecharge));
+        
+        RechargeResponse response = rechargeService.confirmRecharge("RECH-123", "TXN-1");
+        
+        assertNotNull(response);
+        assertEquals(RechargeStatus.SUCCESS, response.getStatus());
+        verify(rechargeRepository, never()).save(any());
+    }
+
+    @Test
+    void getUserRecharges_Pagination_Success() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Recharge> page = new PageImpl<>(Collections.singletonList(sampleRecharge));
+        when(rechargeRepository.findByUserIdOrderByCreatedAtDesc(10L, pageable)).thenReturn(page);
+
+        Page<RechargeResponse> result = rechargeService.getUserRecharges(10L, pageable);
+        
+        assertEquals(1, result.getContent().size());
+        assertEquals("RECH-123", result.getContent().get(0).getRechargeId());
+    }
+
+    @Test
+    void getRechargeStats_UsesCorrectWindow() {
+        when(rechargeRepository.findCountByStatusAndDate(any(), any(), any())).thenReturn(10L);
+        when(rechargeRepository.findRevenueByDate(any(), any())).thenReturn(new BigDecimal("1000.00"));
+        
+        rechargeService.getRechargeStats(7);
+        verify(rechargeRepository, atLeastOnce()).findRevenueByDate(argThat(d -> d.isAfter(LocalDateTime.now().minusDays(8))), any());
+    }
+
+    @Test
+    void initiateRecharge_PlanServiceDown_HandlesGracefully() {
+        InitiateRechargeRequest request = new InitiateRechargeRequest();
+        request.setPlanId(1L);
+        request.setUserId(10L);
+        
+        when(restTemplate.getForObject(anyString(), eq(ApiResponse.class)))
+                .thenThrow(new RuntimeException("Operator Service Down"));
+                
+        assertThrows(RuntimeException.class, () -> rechargeService.initiateRecharge(request));
+    }
+
+    @Test
     void handlePaymentRejected_ValidEvent_UpdatesStatusAndReason() {
         PaymentRejectedEvent event = PaymentRejectedEvent.builder()
                 .rechargeId("RECH-123")

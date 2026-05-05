@@ -60,6 +60,32 @@ class NotificationServiceCoverageTest {
     }
 
     @Test
+    void sendSms_ProviderError_HandlesGracefully() {
+        when(smsService.sendSms(anyString(), anyString())).thenThrow(new RuntimeException("Twilio Down"));
+        when(notificationRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        assertDoesNotThrow(() -> notificationService.sendNotification("9876543210", null, "Hello", NotificationType.SMS));
+    }
+
+    @Test
+    void sendEmail_ProviderError_HandlesGracefully() {
+        when(emailService.sendEmail(anyString(), anyString(), anyString())).thenThrow(new RuntimeException("SMTP Error"));
+        when(notificationRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        assertDoesNotThrow(() -> notificationService.sendNotification(null, "test@test.com", "Hello", NotificationType.EMAIL));
+    }
+
+    @Test
+    void getUserNotifications_Success() {
+        Pageable pageable = PageRequest.of(0, 10);
+        when(notificationRepository.findByUserIdOrderByCreatedAtDesc(10L, pageable))
+                .thenReturn(new PageImpl<>(Collections.emptyList()));
+
+        notificationService.getUserNotifications(10L, pageable);
+        verify(notificationRepository).findByUserIdOrderByCreatedAtDesc(10L, pageable);
+    }
+
+    @Test
     void createAndSendEmail_DatabaseError_ThrowsException() {
         when(notificationRepository.save(any())).thenThrow(new RuntimeException("DB Outage"));
         

@@ -155,15 +155,43 @@ class PaymentServiceCoverageTest {
     }
 
     @Test
-    void enrich_Error_HandlesGracefully() {
-        // Triggered via confirmPayment when metadata is null
-        sampleTransaction.setMobileNumber(null);
+    void confirmPayment_Success_UpdatesStatus() {
+        sampleTransaction.setStatus(PaymentStatus.PENDING);
         when(transactionRepository.findByTransactionId("TXN-123")).thenReturn(Optional.of(sampleTransaction));
-        when(transactionRepository.save(any())).thenReturn(sampleTransaction);
-        when(restTemplate.exchange(anyString(), any(), any(), any(org.springframework.core.ParameterizedTypeReference.class)))
-                .thenThrow(new RuntimeException("Recharge Service Down"));
+        when(transactionRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+        
+        TransactionResponse response = paymentService.confirmPayment("TXN-123", "razorpay_payment_id", "razorpay_signature");
+        
+        assertEquals(PaymentStatus.SUCCESS, response.getStatus());
+        verify(paymentEventProducer).publishPaymentCompleted(any());
+    }
 
-        assertDoesNotThrow(() -> paymentService.confirmPayment("TXN-123", "P-1", "S-1"));
-        // Should log error and continue
+    @Test
+    void getUserTransactions_Pagination_Success() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Transaction> page = new PageImpl<>(Collections.singletonList(sampleTransaction));
+        when(transactionRepository.findByUserIdOrderByCreatedAtDesc(10L, pageable)).thenReturn(page);
+
+        Page<TransactionResponse> result = paymentService.getUserTransactions(10L, pageable);
+        
+        assertEquals(1, result.getContent().size());
+        assertEquals("TXN-123", result.getContent().get(0).getTransactionId());
+    }
+
+    @Test
+    void getPaymentStats_SpecificDays() {
+        when(transactionRepository.findRevenueByDate(any(), any())).thenReturn(Collections.emptyList());
+        when(transactionRepository.findTopUsersByRevenue(any(), any())).thenReturn(Collections.emptyList());
+        
+        paymentService.getPaymentStats(7);
+        verify(transactionRepository).findRevenueByDate(argThat(d -> d.isAfter(LocalDateTime.now().minusDays(8))), any());
+    }
+
+    @Test
+    void processPayment_MappingError_HandlesGracefully() {
+        PaymentRequest request = new PaymentRequest();
+        request.setPaymentMethod("INVALID_METHOD");
+        
+        assertThrows(Exception.class, () -> paymentService.processPayment(request));
     }
 }

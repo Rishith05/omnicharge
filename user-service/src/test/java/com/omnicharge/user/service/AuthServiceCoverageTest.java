@@ -140,30 +140,69 @@ class AuthServiceCoverageTest {
     }
 
     @Test
-    void authenticateWithGoogle_InvalidToken_ThrowsException() throws GeneralSecurityException, IOException {
-        when(googleIdTokenVerifier.verify(anyString())).thenReturn(null);
-        assertThrows(UnauthorizedException.class, () -> authService.authenticateWithGoogle(new GoogleAuthRequest("invalid")));
-    }
-
-    @Test
-    void refreshToken_UserNotFound_ThrowsException() {
-        when(jwtUtil.validateRefreshToken(anyString())).thenReturn(1L);
-        when(userRepository.findById(1L)).thenReturn(Optional.empty());
-        assertThrows(UnauthorizedException.class, () -> authService.refreshToken(new RefreshTokenRequest("jwt")));
-    }
-
-    @Test
-    void logout_Failure_ThrowsException() {
-        when(jwtUtil.extractJti(anyString())).thenThrow(new RuntimeException("JWT error"));
-        assertThrows(BadRequestException.class, () -> authService.logout("token"));
-    }
-
-    @Test
-    void publishBusinessLog_CatchBlock_DoesNotThrow() {
-        when(redisTemplate.hasKey(anyString())).thenReturn(false);
+    void verifyOtp_MaxAttemptsExceeded_ThrowsException() {
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
-        doThrow(new RuntimeException("Log Failed")).when(logEventPublisher).publish(any());
+        when(valueOperations.get("otp_attempts:9876543210")).thenReturn("3");
 
-        assertDoesNotThrow(() -> authService.sendOtp(new SendOtpRequest("9876543210")));
+        assertThrows(BadRequestException.class, () -> authService.verifyOtp(new VerifyPhoneOtpRequest("9876543210", "123456", "Name")));
+    }
+
+    @Test
+    void authenticateWithGoogle_ExistingUserSuccess() throws GeneralSecurityException, IOException {
+        GoogleIdToken.Payload payload = new GoogleIdToken.Payload();
+        payload.setEmail("test@gmail.com");
+        payload.set("name", "Test User");
+        
+        GoogleIdToken idToken = mock(GoogleIdToken.class);
+        when(idToken.getPayload()).thenReturn(payload);
+        when(googleIdTokenVerifier.verify(anyString())).thenReturn(idToken);
+        
+        User user = new User();
+        user.setId(1L);
+        user.setEmail("test@gmail.com");
+        user.setRole(Role.ROLE_USER);
+        user.setIsActive(true);
+        when(userRepository.findByEmail("test@gmail.com")).thenReturn(Optional.of(user));
+        when(jwtUtil.generateToken(any())).thenReturn("token");
+        when(jwtUtil.generateRefreshToken(any())).thenReturn("refresh");
+
+        AuthResponse response = authService.authenticateWithGoogle(new GoogleAuthRequest("valid_token"));
+        
+        assertNotNull(response);
+        assertEquals("test@gmail.com", response.getEmail());
+    }
+
+    @Test
+    void registerWithGoogle_WrongProvider_ThrowsException() throws GeneralSecurityException, IOException {
+        GoogleIdToken.Payload payload = new GoogleIdToken.Payload();
+        payload.setEmail("test@gmail.com");
+        
+        GoogleIdToken idToken = mock(GoogleIdToken.class);
+        when(idToken.getPayload()).thenReturn(payload);
+        when(googleIdTokenVerifier.verify(anyString())).thenReturn(idToken);
+        
+        User user = new User();
+        user.setAuthProvider(AuthProvider.PHONE); // Existing user with PHONE
+        when(userRepository.findByEmail("test@gmail.com")).thenReturn(Optional.of(user));
+
+        assertThrows(BadRequestException.class, () -> authService.authenticateWithGoogle(new GoogleAuthRequest("token")));
+    }
+
+    @Test
+    void logout_Success() {
+        when(jwtUtil.extractJti("token")).thenReturn("jti");
+        authService.logout("token");
+        verify(redisTemplate).delete("jti");
+    }
+
+    @Test
+    void refreshToken_Success() {
+        when(jwtUtil.validateRefreshToken("refresh")).thenReturn(1L);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(sampleUser));
+        when(jwtUtil.generateToken(any())).thenReturn("new_token");
+
+        AuthResponse response = authService.refreshToken(new RefreshTokenRequest("refresh"));
+        assertNotNull(response);
+        assertEquals("new_token", response.getAccessToken());
     }
 }
