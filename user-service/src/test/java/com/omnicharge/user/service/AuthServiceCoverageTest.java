@@ -175,7 +175,7 @@ class AuthServiceCoverageTest {
     }
 
     @Test
-    void registerWithGoogle_WrongProvider_ThrowsException() throws GeneralSecurityException, IOException {
+    void authenticateWithGoogle_AccountDisabled_ThrowsException() throws GeneralSecurityException, IOException {
         GoogleIdToken.Payload payload = new GoogleIdToken.Payload();
         payload.setEmail("test@gmail.com");
         payload.setSubject("google-123");
@@ -185,10 +185,10 @@ class AuthServiceCoverageTest {
         when(googleIdTokenVerifier.verify(anyString())).thenReturn(idToken);
         
         User user = new User();
-        user.setAuthProvider(AuthProvider.PHONE); // Existing user with PHONE
+        user.setIsActive(false); // Account disabled
         when(userRepository.findByGoogleId("google-123")).thenReturn(Optional.of(user));
 
-        // It throws UnauthorizedException because AuthService wraps all exceptions
+        // It throws UnauthorizedException because account is disabled
         assertThrows(UnauthorizedException.class, () -> authService.authenticateWithGoogle(new GoogleAuthRequest("token")));
     }
 
