@@ -18,7 +18,8 @@ import org.springframework.mail.javamail.JavaMailSender;
     "jwt.refresh-token-expiration=86400000",
     "spring.datasource.url=jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1",
     "spring.datasource.driver-class-name=org.hibernate.dialect.H2Dialect",
-    "spring.data.redis.repositories.enabled=false"
+    "spring.data.redis.repositories.enabled=false",
+    "management.health.redis.enabled=false"
 })
 class ApplicationTests {
 

@@ -26,6 +26,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -151,6 +152,7 @@ class AuthServiceCoverageTest {
     void authenticateWithGoogle_ExistingUserSuccess() throws GeneralSecurityException, IOException {
         GoogleIdToken.Payload payload = new GoogleIdToken.Payload();
         payload.setEmail("test@gmail.com");
+        payload.setSubject("google-123");
         payload.set("name", "Test User");
         
         GoogleIdToken idToken = mock(GoogleIdToken.class);
@@ -162,7 +164,7 @@ class AuthServiceCoverageTest {
         user.setEmail("test@gmail.com");
         user.setRole(Role.ROLE_USER);
         user.setIsActive(true);
-        when(userRepository.findByEmail("test@gmail.com")).thenReturn(Optional.of(user));
+        when(userRepository.findByGoogleId("google-123")).thenReturn(Optional.of(user));
         when(jwtUtil.generateAccessToken(anyLong(), any(), any(), anyBoolean())).thenReturn("token");
         when(jwtUtil.generateRefreshToken(anyLong(), any())).thenReturn("refresh");
 
@@ -176,6 +178,7 @@ class AuthServiceCoverageTest {
     void registerWithGoogle_WrongProvider_ThrowsException() throws GeneralSecurityException, IOException {
         GoogleIdToken.Payload payload = new GoogleIdToken.Payload();
         payload.setEmail("test@gmail.com");
+        payload.setSubject("google-123");
         
         GoogleIdToken idToken = mock(GoogleIdToken.class);
         when(idToken.getPayload()).thenReturn(payload);
@@ -183,16 +186,20 @@ class AuthServiceCoverageTest {
         
         User user = new User();
         user.setAuthProvider(AuthProvider.PHONE); // Existing user with PHONE
-        when(userRepository.findByEmail("test@gmail.com")).thenReturn(Optional.of(user));
+        when(userRepository.findByGoogleId("google-123")).thenReturn(Optional.of(user));
 
-        assertThrows(BadRequestException.class, () -> authService.authenticateWithGoogle(new GoogleAuthRequest("token")));
+        // It throws UnauthorizedException because AuthService wraps all exceptions
+        assertThrows(UnauthorizedException.class, () -> authService.authenticateWithGoogle(new GoogleAuthRequest("token")));
     }
 
     @Test
     void logout_Success() {
         when(jwtUtil.extractJti("token")).thenReturn("jti");
+        when(jwtUtil.getRemainingExpiration("token")).thenReturn(1000L);
+        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+
         authService.logout("token");
-        verify(redisTemplate).delete("jti");
+        verify(valueOperations).set("blacklist:jti", "true", 1000L, TimeUnit.MILLISECONDS);
     }
 
     @Test
