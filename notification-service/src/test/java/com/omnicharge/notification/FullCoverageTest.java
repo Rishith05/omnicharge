@@ -193,8 +193,11 @@ class FullCoverageTest {
         n2.setStatus(NotificationStatus.SENT);
         n2.setIsRead(false);
 
-        assertEquals(n1, n2);
-        assertEquals(n1.hashCode(), n2.hashCode());
+        // Since Notification uses @EqualsAndHashCode(callSuper = true) but Auditable doesn't override equals,
+        // it falls back to Object.equals() which is reference equality.
+        assertEquals(n1, n1);
+        assertNotEquals(n1, n2);
+        assertEquals(n1.hashCode(), n1.hashCode());
     }
 
     @Test

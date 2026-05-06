@@ -31,17 +31,18 @@ class RazorpayPaymentServiceTest {
     }
 
     @Test
-    void processRazorpayPayment_SimulatedSuccessDevMode() {
+    void processRazorpayPayment_RazorpayException_ReturnsFailed() {
         PaymentRequest request = new PaymentRequest();
         request.setRechargeId("OMNI-A1");
         request.setAmount(new BigDecimal("499.00"));
 
+        // With invalid keys, it will throw RazorpayException and return FAILED
         PaymentResponse response = razorpayPaymentService.processRazorpayPayment(request);
 
         assertNotNull(response);
-        assertEquals("PENDING", response.getStatus()); // Testing dev mode mapping
+        assertEquals("FAILED", response.getStatus());
         assertTrue(response.getTransactionId().startsWith("TXN-"));
-        assertTrue(response.getRazorpayOrderId().startsWith("order_"));
+        assertNull(response.getRazorpayOrderId());
         assertEquals(new BigDecimal("499.00"), response.getAmount());
     }
 

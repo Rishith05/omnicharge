@@ -171,12 +171,12 @@ class PaymentServiceCoverageTest {
     }
 
     @Test
-    void getUserTransactions_Pagination_Success() {
+    void getPaymentHistory_Pagination_Success() {
         Pageable pageable = PageRequest.of(0, 10);
         Page<Transaction> page = new PageImpl<>(Collections.singletonList(sampleTransaction));
-        when(transactionRepository.findByUserIdOrderByCreatedAtDesc(10L, pageable)).thenReturn(page);
+        when(transactionRepository.findByUserIdWithFilters(eq(10L), any(), any(), any(), any(), any(), eq(pageable))).thenReturn(page);
 
-        Page<TransactionResponse> result = paymentService.getUserTransactions(10L, pageable);
+        Page<TransactionResponse> result = paymentService.getPaymentHistory(10L, null, null, null, null, null, pageable);
         
         assertEquals(1, result.getContent().size());
         assertEquals("TXN-123", result.getContent().get(0).getTransactionId());
