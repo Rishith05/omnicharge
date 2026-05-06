@@ -163,8 +163,8 @@ class AuthServiceCoverageTest {
         user.setRole(Role.ROLE_USER);
         user.setIsActive(true);
         when(userRepository.findByEmail("test@gmail.com")).thenReturn(Optional.of(user));
-        when(jwtUtil.generateToken(any())).thenReturn("token");
-        when(jwtUtil.generateRefreshToken(any())).thenReturn("refresh");
+        when(jwtUtil.generateAccessToken(anyLong(), any(), any(), anyBoolean())).thenReturn("token");
+        when(jwtUtil.generateRefreshToken(anyLong(), any())).thenReturn("refresh");
 
         AuthResponse response = authService.authenticateWithGoogle(new GoogleAuthRequest("valid_token"));
         
@@ -199,7 +199,7 @@ class AuthServiceCoverageTest {
     void refreshToken_Success() {
         when(jwtUtil.validateRefreshToken("refresh")).thenReturn(1L);
         when(userRepository.findById(1L)).thenReturn(Optional.of(sampleUser));
-        when(jwtUtil.generateToken(any())).thenReturn("new_token");
+        when(jwtUtil.generateAccessToken(anyLong(), any(), any(), anyBoolean())).thenReturn("new_token");
 
         AuthResponse response = authService.refreshToken(new RefreshTokenRequest("refresh"));
         assertNotNull(response);
