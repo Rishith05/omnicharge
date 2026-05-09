@@ -517,4 +517,206 @@ class FullCoverageTest {
     void iRazorpayPaymentService_isInterface() {
         assertTrue(IRazorpayPaymentService.class.isInterface());
     }
+
+    // ═══════════════════════════════════════════════════════════
+    // PaymentEventProducer - error paths
+    // ═══════════════════════════════════════════════════════════
+
+    @Test
+    void paymentEventProducer_publishApproved_exception() {
+        org.springframework.amqp.rabbit.core.RabbitTemplate rabbitTemplate = mock(org.springframework.amqp.rabbit.core.RabbitTemplate.class);
+        com.omnicharge.common.logging.LogEventPublisher logEventPublisher = mock(com.omnicharge.common.logging.LogEventPublisher.class);
+        com.omnicharge.payment.messaging.PaymentEventProducer producer = new com.omnicharge.payment.messaging.PaymentEventProducer(rabbitTemplate, logEventPublisher);
+
+        doThrow(new RuntimeException("Rabbit down")).when(rabbitTemplate).convertAndSend(anyString(), anyString(), any(Object.class));
+        com.omnicharge.common.event.saga.PaymentApprovedEvent event = com.omnicharge.common.event.saga.PaymentApprovedEvent.builder()
+                .rechargeId("R1").transactionId("T1").amount(BigDecimal.TEN).status("APPROVED").build();
+        producer.publishPaymentApproved(event); // Should not throw
+    }
+
+    @Test
+    void paymentEventProducer_publishRejected_exception() {
+        org.springframework.amqp.rabbit.core.RabbitTemplate rabbitTemplate = mock(org.springframework.amqp.rabbit.core.RabbitTemplate.class);
+        com.omnicharge.common.logging.LogEventPublisher logEventPublisher = mock(com.omnicharge.common.logging.LogEventPublisher.class);
+        com.omnicharge.payment.messaging.PaymentEventProducer producer = new com.omnicharge.payment.messaging.PaymentEventProducer(rabbitTemplate, logEventPublisher);
+
+        doThrow(new RuntimeException("Rabbit down")).when(rabbitTemplate).convertAndSend(anyString(), anyString(), any(Object.class));
+        com.omnicharge.common.event.saga.PaymentRejectedEvent event = com.omnicharge.common.event.saga.PaymentRejectedEvent.builder()
+                .rechargeId("R1").failureReason("Insufficient funds").build();
+        producer.publishPaymentRejected(event); // Should not throw
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // PaymentEventProducer - SUCCESS paths
+    // ═══════════════════════════════════════════════════════════
+
+    @Test
+    void paymentEventProducer_publishCompleted_success() {
+        org.springframework.amqp.rabbit.core.RabbitTemplate rabbitTemplate = mock(org.springframework.amqp.rabbit.core.RabbitTemplate.class);
+        com.omnicharge.common.logging.LogEventPublisher logEventPublisher = mock(com.omnicharge.common.logging.LogEventPublisher.class);
+        com.omnicharge.payment.messaging.PaymentEventProducer producer = new com.omnicharge.payment.messaging.PaymentEventProducer(rabbitTemplate, logEventPublisher);
+
+        com.omnicharge.common.event.PaymentCompletedEvent event = com.omnicharge.common.event.PaymentCompletedEvent.builder()
+                .transactionId("T1").rechargeId("R1").userId(1L).status("COMPLETED")
+                .amount(BigDecimal.TEN).paymentMethod("UPI").build();
+        producer.publishPaymentCompleted(event);
+
+        verify(rabbitTemplate).convertAndSend(eq("omnicharge.exchange"), eq("payment.completed"), any(Object.class));
+        verify(logEventPublisher).publish(any(com.omnicharge.common.logging.LogEvent.class));
+    }
+
+    @Test
+    void paymentEventProducer_publishCompleted_exception() {
+        org.springframework.amqp.rabbit.core.RabbitTemplate rabbitTemplate = mock(org.springframework.amqp.rabbit.core.RabbitTemplate.class);
+        com.omnicharge.common.logging.LogEventPublisher logEventPublisher = mock(com.omnicharge.common.logging.LogEventPublisher.class);
+        com.omnicharge.payment.messaging.PaymentEventProducer producer = new com.omnicharge.payment.messaging.PaymentEventProducer(rabbitTemplate, logEventPublisher);
+
+        doThrow(new RuntimeException("fail")).when(rabbitTemplate).convertAndSend(anyString(), anyString(), any(Object.class));
+        com.omnicharge.common.event.PaymentCompletedEvent event = com.omnicharge.common.event.PaymentCompletedEvent.builder()
+                .transactionId("T1").rechargeId("R1").userId(1L).status("COMPLETED")
+                .amount(BigDecimal.TEN).paymentMethod("UPI").build();
+        producer.publishPaymentCompleted(event); // Should not throw
+    }
+
+    @Test
+    void paymentEventProducer_publishApproved_success() {
+        org.springframework.amqp.rabbit.core.RabbitTemplate rabbitTemplate = mock(org.springframework.amqp.rabbit.core.RabbitTemplate.class);
+        com.omnicharge.common.logging.LogEventPublisher logEventPublisher = mock(com.omnicharge.common.logging.LogEventPublisher.class);
+        com.omnicharge.payment.messaging.PaymentEventProducer producer = new com.omnicharge.payment.messaging.PaymentEventProducer(rabbitTemplate, logEventPublisher);
+
+        com.omnicharge.common.event.saga.PaymentApprovedEvent event = com.omnicharge.common.event.saga.PaymentApprovedEvent.builder()
+                .rechargeId("R1").transactionId("T1").amount(BigDecimal.TEN).status("APPROVED").build();
+        producer.publishPaymentApproved(event);
+
+        verify(rabbitTemplate).convertAndSend(eq("omnicharge.exchange"), eq("saga.payment.approved"), any(Object.class));
+        verify(logEventPublisher).publish(any(com.omnicharge.common.logging.LogEvent.class));
+    }
+
+    @Test
+    void paymentEventProducer_publishRejected_success() {
+        org.springframework.amqp.rabbit.core.RabbitTemplate rabbitTemplate = mock(org.springframework.amqp.rabbit.core.RabbitTemplate.class);
+        com.omnicharge.common.logging.LogEventPublisher logEventPublisher = mock(com.omnicharge.common.logging.LogEventPublisher.class);
+        com.omnicharge.payment.messaging.PaymentEventProducer producer = new com.omnicharge.payment.messaging.PaymentEventProducer(rabbitTemplate, logEventPublisher);
+
+        com.omnicharge.common.event.saga.PaymentRejectedEvent event = com.omnicharge.common.event.saga.PaymentRejectedEvent.builder()
+                .rechargeId("R1").failureReason("Insufficient funds").build();
+        producer.publishPaymentRejected(event);
+
+        verify(rabbitTemplate).convertAndSend(eq("omnicharge.exchange"), eq("saga.payment.rejected"), any(Object.class));
+        verify(logEventPublisher).publish(any(com.omnicharge.common.logging.LogEvent.class));
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // SecurityConfig - instantiation & bean coverage
+    // ═══════════════════════════════════════════════════════════
+
+    @Test
+    void securityConfig_canBeInstantiated() {
+        GatewayAuthenticationFilter filter = new GatewayAuthenticationFilter();
+        com.omnicharge.payment.config.SecurityConfig config = new com.omnicharge.payment.config.SecurityConfig(filter);
+        assertNotNull(config);
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // RabbitMQConfig - additional bean methods
+    // ═══════════════════════════════════════════════════════════
+
+    @Test
+    void rabbitMQConfig_paymentProcessQueue() {
+        RabbitMQConfig config = new RabbitMQConfig();
+        org.springframework.amqp.core.Queue queue = config.paymentProcessQueue();
+        assertNotNull(queue);
+        assertEquals("saga.payment.process", queue.getName());
+    }
+
+    @Test
+    void rabbitMQConfig_paymentProcessBinding() {
+        RabbitMQConfig config = new RabbitMQConfig();
+        org.springframework.amqp.core.Queue queue = config.paymentProcessQueue();
+        org.springframework.amqp.core.TopicExchange exchange = config.exchange();
+        org.springframework.amqp.core.Binding binding = config.paymentProcessBinding(queue, exchange);
+        assertNotNull(binding);
+        assertEquals("saga.recharge.initiated", binding.getRoutingKey());
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // RazorpayPaymentService - fallback method
+    // ═══════════════════════════════════════════════════════════
+
+    @Test
+    void razorpayPaymentService_fallback() {
+        com.omnicharge.common.logging.LogEventPublisher logPub = mock(com.omnicharge.common.logging.LogEventPublisher.class);
+        com.omnicharge.payment.service.RazorpayPaymentService rzpService = new com.omnicharge.payment.service.RazorpayPaymentService(logPub);
+        
+        PaymentRequest request = PaymentRequest.builder()
+                .rechargeId("R1").amount(BigDecimal.TEN).paymentMethod("UPI").build();
+        
+        PaymentResponse response = rzpService.processPaymentFallback(request, new RuntimeException("Circuit breaker"));
+        assertNotNull(response);
+        assertEquals("FAILED", response.getStatus());
+        assertThat(response.getTransactionId()).startsWith("TXN-");
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // DirectRazorpayService - instantiation & field coverage
+    // ═══════════════════════════════════════════════════════════
+
+    @Test
+    void directRazorpayService_canBeInstantiated() {
+        DirectRazorpayService service = new DirectRazorpayService();
+        assertNotNull(service);
+    }
+
+    @Test
+    void directRazorpayService_createOrder_throwsOnInvalidKey() throws Exception {
+        DirectRazorpayService service = new DirectRazorpayService();
+        // Set fields via reflection
+        java.lang.reflect.Field keyIdField = DirectRazorpayService.class.getDeclaredField("keyId");
+        keyIdField.setAccessible(true);
+        keyIdField.set(service, "invalid_key");
+        java.lang.reflect.Field keySecretField = DirectRazorpayService.class.getDeclaredField("keySecret");
+        keySecretField.setAccessible(true);
+        keySecretField.set(service, "invalid_secret");
+
+        OrderRequest request = new OrderRequest();
+        request.setAmount(BigDecimal.TEN);
+        request.setCurrency("INR");
+
+        assertThrows(RuntimeException.class, () -> service.createOrder(request));
+    }
+
+    @Test
+    void directRazorpayService_verifyPayment_invalidSignature() throws Exception {
+        DirectRazorpayService service = new DirectRazorpayService();
+        java.lang.reflect.Field keySecretField = DirectRazorpayService.class.getDeclaredField("keySecret");
+        keySecretField.setAccessible(true);
+        keySecretField.set(service, "test_secret");
+
+        com.omnicharge.payment.dto.PaymentVerificationRequest req = new com.omnicharge.payment.dto.PaymentVerificationRequest();
+        req.setRazorpayOrderId("order_123");
+        req.setRazorpayPaymentId("pay_123");
+        req.setRazorpaySignature("invalid_signature");
+
+        boolean result = service.verifyPayment(req);
+        assertFalse(result);
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // PaymentVerificationRequest DTO
+    // ═══════════════════════════════════════════════════════════
+
+    @Test
+    void paymentVerificationRequest_allFields() {
+        com.omnicharge.payment.dto.PaymentVerificationRequest req = new com.omnicharge.payment.dto.PaymentVerificationRequest();
+        req.setRazorpayOrderId("order_1");
+        req.setRazorpayPaymentId("pay_1");
+        req.setRazorpaySignature("sig_1");
+        req.setRechargeId("R1");
+        req.setAmount(BigDecimal.TEN);
+        assertEquals("order_1", req.getRazorpayOrderId());
+        assertEquals("pay_1", req.getRazorpayPaymentId());
+        assertEquals("sig_1", req.getRazorpaySignature());
+        assertEquals("R1", req.getRechargeId());
+        assertEquals(BigDecimal.TEN, req.getAmount());
+    }
 }

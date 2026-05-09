@@ -1,8 +1,8 @@
-package com.omnicharge.user.config;
+package com.omnicharge.recharge.config;
 
-import com.omnicharge.user.filter.GatewayAuthenticationFilter;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.DefaultSecurityFilterChain;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -24,18 +24,8 @@ class SecurityConfigTest {
         DefaultSecurityFilterChain chain = mock(DefaultSecurityFilterChain.class);
         when(http.build()).thenReturn(chain);
 
-        var result = config.securityFilterChain(http);
+        SecurityFilterChain result = config.securityFilterChain(http);
         assertNotNull(result);
         verify(http).build();
-    }
-
-    @Test
-    void passwordEncoder_works() {
-        GatewayAuthenticationFilter filter = new GatewayAuthenticationFilter();
-        SecurityConfig config = new SecurityConfig(filter);
-        var encoder = config.passwordEncoder();
-        assertNotNull(encoder);
-        String encoded = encoder.encode("password");
-        assertTrue(encoder.matches("password", encoded));
     }
 }

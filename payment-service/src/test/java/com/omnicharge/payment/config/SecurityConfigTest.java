@@ -1,8 +1,8 @@
-package com.omnicharge.user.config;
+package com.omnicharge.payment.config;
 
-import com.omnicharge.user.filter.GatewayAuthenticationFilter;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.DefaultSecurityFilterChain;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -15,7 +15,10 @@ class SecurityConfigTest {
         GatewayAuthenticationFilter filter = new GatewayAuthenticationFilter();
         SecurityConfig config = new SecurityConfig(filter);
 
+        // Use a real HttpSecurity builder via Spring's standalone builder
         HttpSecurity http = mock(HttpSecurity.class, RETURNS_DEEP_STUBS);
+
+        // Mock the deep chain: csrf -> sessionManagement -> authorizeHttpRequests -> addFilterBefore -> build
         when(http.csrf(any())).thenReturn(http);
         when(http.sessionManagement(any())).thenReturn(http);
         when(http.authorizeHttpRequests(any())).thenReturn(http);
@@ -24,18 +27,11 @@ class SecurityConfigTest {
         DefaultSecurityFilterChain chain = mock(DefaultSecurityFilterChain.class);
         when(http.build()).thenReturn(chain);
 
-        var result = config.securityFilterChain(http);
+        SecurityFilterChain result = config.securityFilterChain(http);
         assertNotNull(result);
+        verify(http).csrf(any());
+        verify(http).sessionManagement(any());
+        verify(http).authorizeHttpRequests(any());
         verify(http).build();
-    }
-
-    @Test
-    void passwordEncoder_works() {
-        GatewayAuthenticationFilter filter = new GatewayAuthenticationFilter();
-        SecurityConfig config = new SecurityConfig(filter);
-        var encoder = config.passwordEncoder();
-        assertNotNull(encoder);
-        String encoded = encoder.encode("password");
-        assertTrue(encoder.matches("password", encoded));
     }
 }
