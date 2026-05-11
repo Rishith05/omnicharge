@@ -18,7 +18,7 @@ export class UserService {
   constructor(
     private http: HttpClient,
     private authService: AuthService,
-    private cacheService: CacheService
+    private cacheService: CacheService,
   ) {}
 
   getProfile(forceRefresh = false): Observable<User> {
@@ -34,15 +34,15 @@ export class UserService {
       const currentUser = this.authService.getCurrentUser() || MOCK_ALL_USERS[1];
       return of(currentUser).pipe(
         delay(300),
-        tap(user => this.cacheService.set(this.CACHE_KEYS.PROFILE, user))
+        tap((user) => this.cacheService.set(this.CACHE_KEYS.PROFILE, user)),
       );
     }
     return this.http.get<any>(`${this.apiUrl}/profile`).pipe(
-      tap(user => {
+      tap((user) => {
         const normalized = this.normalizeUser(user);
         this.authService.updateLocalUser(normalized);
         this.cacheService.set(this.CACHE_KEYS.PROFILE, normalized);
-      })
+      }),
     );
   }
 
@@ -55,11 +55,11 @@ export class UserService {
       return of(updatedUser).pipe(delay(300));
     }
     return this.http.put<any>(`${this.apiUrl}/profile`, request).pipe(
-      tap(user => {
+      tap((user) => {
         const normalized = this.normalizeUser(user);
         this.authService.updateLocalUser(normalized);
         this.cacheService.invalidate(this.CACHE_KEYS.PROFILE);
-      })
+      }),
     );
   }
 
@@ -68,7 +68,7 @@ export class UserService {
     return {
       ...user,
       createdAt: user.createdAt || user.createdDate,
-      updatedAt: user.updatedAt || user.createdDate // Fallback if missing
+      updatedAt: user.updatedAt || user.createdDate, // Fallback if missing
     } as User;
   }
 
@@ -92,17 +92,17 @@ export class UserService {
     if (environment.useMockApi) {
       return of([...MOCK_ALL_USERS]).pipe(
         delay(400),
-        tap(users => this.cacheService.set(this.CACHE_KEYS.ALL_USERS, users))
+        tap((users) => this.cacheService.set(this.CACHE_KEYS.ALL_USERS, users)),
       );
     }
-    return this.http.get<User[]>(`${environment.apiUrl}/api/admin/users`).pipe(
-      tap(users => this.cacheService.set(this.CACHE_KEYS.ALL_USERS, users))
-    );
+    return this.http
+      .get<User[]>(`${environment.apiUrl}/api/admin/users`)
+      .pipe(tap((users) => this.cacheService.set(this.CACHE_KEYS.ALL_USERS, users)));
   }
 
   getUserById(id: number): Observable<User> {
     if (environment.useMockApi) {
-      return of(MOCK_ALL_USERS.find(u => u.id === id) || MOCK_ALL_USERS[0]).pipe(delay(200));
+      return of(MOCK_ALL_USERS.find((u) => u.id === id) || MOCK_ALL_USERS[0]).pipe(delay(200));
     }
     return this.http.get<User>(`${environment.apiUrl}/api/admin/users/${id}`);
   }

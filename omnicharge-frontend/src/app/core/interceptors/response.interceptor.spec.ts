@@ -47,7 +47,7 @@ describe('responseInterceptor', () => {
     req.flush({
       success: true,
       message: 'OK',
-      data: { content: [{ id: 1 }], totalElements: 1, totalPages: 1 }
+      data: { content: [{ id: 1 }], totalElements: 1, totalPages: 1 },
     });
   });
 
@@ -64,7 +64,7 @@ describe('responseInterceptor', () => {
     httpClient.get('/api/test').subscribe({
       error: (err) => {
         expect(err.status).toBe(403);
-      }
+      },
     });
 
     const req = httpMock.expectOne('/api/test');
@@ -76,7 +76,7 @@ describe('responseInterceptor', () => {
     httpClient.get('/api/test').subscribe({
       error: (err) => {
         expect(err.status).toBe(404);
-      }
+      },
     });
 
     const req = httpMock.expectOne('/api/test');
@@ -88,7 +88,7 @@ describe('responseInterceptor', () => {
     httpClient.get('/api/test').subscribe({
       error: (err) => {
         expect(err.status).toBe(500);
-      }
+      },
     });
 
     const req = httpMock.expectOne('/api/test');
@@ -105,7 +105,7 @@ describe('responseInterceptor', () => {
       error: (err) => {
         expect(err.status).toBe(401);
         expect(localStorage.getItem('accessToken')).toBeNull();
-      }
+      },
     });
 
     const req = httpMock.expectOne('/api/protected');
@@ -114,7 +114,7 @@ describe('responseInterceptor', () => {
 
   it('should not redirect 401 for public auth endpoints', () => {
     httpClient.post('/api/auth/send-otp', {}).subscribe({
-      error: () => {}
+      error: () => {},
     });
 
     const req = httpMock.expectOne('/api/auth/send-otp');

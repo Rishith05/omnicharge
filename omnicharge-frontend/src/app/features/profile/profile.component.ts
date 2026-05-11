@@ -18,9 +18,15 @@ import { HasUnsavedChanges } from '../../core/guards/unsaved-changes.guard';
   selector: 'app-profile',
   standalone: true,
   imports: [
-    CommonModule, ReactiveFormsModule,
-    MatCardModule, MatFormFieldModule, MatInputModule,
-    MatButtonModule, MatIconModule, MatSnackBarModule, MatDividerModule
+    CommonModule,
+    ReactiveFormsModule,
+    MatCardModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatIconModule,
+    MatSnackBarModule,
+    MatDividerModule,
   ],
   template: `
     <div class="profile-page fade-in">
@@ -38,9 +44,15 @@ import { HasUnsavedChanges } from '../../core/guards/unsaved-changes.guard';
           </div>
           <mat-divider></mat-divider>
           <div class="info-rows">
-            <div class="info-row"><span>Mobile</span><strong>{{ user?.mobileNumber || 'Not set' }}</strong></div>
-            <div class="info-row"><span>Auth Provider</span><strong>{{ user?.authProvider }}</strong></div>
-            <div class="info-row"><span>Joined</span><strong>{{ user?.createdAt | date:'mediumDate' }}</strong></div>
+            <div class="info-row">
+              <span>Mobile</span><strong>{{ user?.mobileNumber || 'Not set' }}</strong>
+            </div>
+            <div class="info-row">
+              <span>Auth Provider</span><strong>{{ user?.authProvider }}</strong>
+            </div>
+            <div class="info-row">
+              <span>Joined</span><strong>{{ user?.createdAt | date: 'mediumDate' }}</strong>
+            </div>
           </div>
         </mat-card>
 
@@ -50,11 +62,11 @@ import { HasUnsavedChanges } from '../../core/guards/unsaved-changes.guard';
             <form [formGroup]="profileForm" (ngSubmit)="updateProfile()">
               <mat-form-field appearance="outline">
                 <mat-label>Full Name</mat-label>
-                <input matInput formControlName="fullName">
+                <input matInput formControlName="fullName" />
               </mat-form-field>
               <mat-form-field appearance="outline">
                 <mat-label>Mobile Number</mat-label>
-                <input matInput formControlName="mobileNumber">
+                <input matInput formControlName="mobileNumber" />
               </mat-form-field>
               <button mat-raised-button color="primary" type="submit">Save Changes</button>
             </form>
@@ -65,11 +77,11 @@ import { HasUnsavedChanges } from '../../core/guards/unsaved-changes.guard';
             <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
               <mat-form-field appearance="outline">
                 <mat-label>Current Password</mat-label>
-                <input matInput formControlName="currentPassword" type="password">
+                <input matInput formControlName="currentPassword" type="password" />
               </mat-form-field>
               <mat-form-field appearance="outline">
                 <mat-label>New Password</mat-label>
-                <input matInput formControlName="newPassword" type="password">
+                <input matInput formControlName="newPassword" type="password" />
               </mat-form-field>
               <button mat-raised-button color="primary" type="submit">Update Password</button>
             </form>
@@ -78,28 +90,90 @@ import { HasUnsavedChanges } from '../../core/guards/unsaved-changes.guard';
       </div>
     </div>
   `,
-  styles: [`
-    .profile-page { max-width: 1000px; margin: 0 auto; }
-    .page-title { display: flex; align-items: center; gap: 12px; font-size: 24px; font-weight: 800; margin-bottom: 24px; }
-    .profile-grid { display: grid; grid-template-columns: 320px 1fr; gap: 24px; }
-    .profile-info-card { padding: 32px; text-align: center; }
-    .avatar { margin-bottom: 12px; }
-    .avatar mat-icon { font-size: 80px; width: 80px; height: 80px; color: var(--accent-purple); }
-    .profile-info-card h2 { font-size: 20px; font-weight: 700; }
-    .role-badge {
-      display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 12px;
-      border-radius: 20px; background: rgba(127,90,240,0.2); color: var(--accent-purple);
-      margin: 6px 0; text-transform: uppercase; letter-spacing: 1px;
-    }
-    .profile-info-card p { color: var(--text-secondary); font-size: 14px; }
-    .info-rows { padding: 16px 0; }
-    .info-row { display: flex; justify-content: space-between; padding: 10px 0; }
-    .info-row span { color: var(--text-secondary); font-size: 14px; }
-    .forms-col { display: flex; flex-direction: column; gap: 20px; }
-    .form-card { padding: 28px; }
-    .form-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
-    @media (max-width: 768px) { .profile-grid { grid-template-columns: 1fr; } }
-  `]
+  styles: [
+    `
+      .profile-page {
+        max-width: 1000px;
+        margin: 0 auto;
+      }
+      .page-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 24px;
+        font-weight: 800;
+        margin-bottom: 24px;
+      }
+      .profile-grid {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        gap: 24px;
+      }
+      .profile-info-card {
+        padding: 32px;
+        text-align: center;
+      }
+      .avatar {
+        margin-bottom: 12px;
+      }
+      .avatar mat-icon {
+        font-size: 80px;
+        width: 80px;
+        height: 80px;
+        color: var(--accent-purple);
+      }
+      .profile-info-card h2 {
+        font-size: 20px;
+        font-weight: 700;
+      }
+      .role-badge {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 3px 12px;
+        border-radius: 20px;
+        background: rgba(127, 90, 240, 0.2);
+        color: var(--accent-purple);
+        margin: 6px 0;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      .profile-info-card p {
+        color: var(--text-secondary);
+        font-size: 14px;
+      }
+      .info-rows {
+        padding: 16px 0;
+      }
+      .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+      }
+      .info-row span {
+        color: var(--text-secondary);
+        font-size: 14px;
+      }
+      .forms-col {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+      .form-card {
+        padding: 28px;
+      }
+      .form-card h3 {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 16px;
+      }
+      @media (max-width: 768px) {
+        .profile-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    `,
+  ],
 })
 export class ProfileComponent implements OnInit, OnDestroy, HasUnsavedChanges {
   user: User | null = null;
@@ -112,15 +186,15 @@ export class ProfileComponent implements OnInit, OnDestroy, HasUnsavedChanges {
     private fb: FormBuilder,
     private userService: UserService,
     private authService: AuthService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
   ) {
     this.profileForm = this.fb.group({
       fullName: ['', Validators.required],
-      mobileNumber: ['']
+      mobileNumber: [''],
     });
     this.passwordForm = this.fb.group({
       currentPassword: ['', Validators.required],
-      newPassword: ['', [Validators.required, Validators.minLength(6)]]
+      newPassword: ['', [Validators.required, Validators.minLength(6)]],
     });
   }
 
@@ -130,7 +204,8 @@ export class ProfileComponent implements OnInit, OnDestroy, HasUnsavedChanges {
   }
 
   ngOnInit(): void {
-    this.userService.getProfile()
+    this.userService
+      .getProfile()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (user) => {
@@ -138,35 +213,51 @@ export class ProfileComponent implements OnInit, OnDestroy, HasUnsavedChanges {
           this.profileForm.patchValue({ fullName: user.fullName, mobileNumber: user.mobileNumber });
           // Mark as pristine since we just loaded the data
           this.profileForm.markAsPristine();
-        }
+        },
       });
   }
 
   updateProfile(): void {
     if (this.profileForm.invalid) return;
-    this.userService.updateProfile(this.profileForm.value)
+    this.userService
+      .updateProfile(this.profileForm.value)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (updatedUser) => {
           this.user = updatedUser;
           this.profileForm.markAsPristine();
-          this.snackBar.open('Profile updated!', 'Close', { duration: 3000, panelClass: ['success-snackbar'] });
+          this.snackBar.open('Profile updated!', 'Close', {
+            duration: 3000,
+            panelClass: ['success-snackbar'],
+          });
         },
-        error: (err) => this.snackBar.open(err.error?.message || 'Update failed', 'Close', { duration: 4000, panelClass: ['error-snackbar'] })
+        error: (err) =>
+          this.snackBar.open(err.error?.message || 'Update failed', 'Close', {
+            duration: 4000,
+            panelClass: ['error-snackbar'],
+          }),
       });
   }
 
   changePassword(): void {
     if (this.passwordForm.invalid) return;
-    this.userService.changePassword(this.passwordForm.value)
+    this.userService
+      .changePassword(this.passwordForm.value)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          this.snackBar.open('Password changed!', 'Close', { duration: 3000, panelClass: ['success-snackbar'] });
+          this.snackBar.open('Password changed!', 'Close', {
+            duration: 3000,
+            panelClass: ['success-snackbar'],
+          });
           this.passwordForm.reset();
           this.passwordForm.markAsPristine();
         },
-        error: (err) => this.snackBar.open(err.error?.message || 'Password change failed', 'Close', { duration: 4000, panelClass: ['error-snackbar'] })
+        error: (err) =>
+          this.snackBar.open(err.error?.message || 'Password change failed', 'Close', {
+            duration: 4000,
+            panelClass: ['error-snackbar'],
+          }),
       });
   }
 

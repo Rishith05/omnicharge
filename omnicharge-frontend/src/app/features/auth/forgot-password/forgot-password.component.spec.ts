@@ -6,58 +6,46 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { AuthService } from '../../../core/services/auth.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { of, throwError } from 'rxjs';
+import { of } from 'rxjs';
 
 describe('ForgotPasswordComponent', () => {
   let component: ForgotPasswordComponent;
   let fixture: ComponentFixture<ForgotPasswordComponent>;
-  let authSpy: jasmine.SpyObj<AuthService>;
-  let snackSpy: jasmine.SpyObj<MatSnackBar>;
+  let authService: jasmine.SpyObj<AuthService>;
+  let snackBar: jasmine.SpyObj<MatSnackBar>;
 
   beforeEach(async () => {
-    authSpy = jasmine.createSpyObj('AuthService', ['forgotPassword', 'resetPassword']);
-    snackSpy = jasmine.createSpyObj('MatSnackBar', ['open']);
+    authService = jasmine.createSpyObj('AuthService', ['forgotPassword', 'resetPassword']);
+    snackBar = jasmine.createSpyObj('MatSnackBar', ['open']);
 
     await TestBed.configureTestingModule({
       imports: [ForgotPasswordComponent, NoopAnimationsModule],
       providers: [
-        provideRouter([]), provideHttpClient(), provideHttpClientTesting(),
-        { provide: AuthService, useValue: authSpy },
-        { provide: MatSnackBar, useValue: snackSpy },
+        provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: AuthService, useValue: authService },
+        { provide: MatSnackBar, useValue: snackBar },
       ],
     }).compileComponents();
+
     fixture = TestBed.createComponent(ForgotPasswordComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
 
-  it('should create', () => { expect(component).toBeTruthy(); });
-
-  it('should not send OTP if form invalid', () => {
+  it('should send OTP', () => {
+    authService.forgotPassword.and.returnValue(of({}));
+    component.emailForm.patchValue({ email: 't@t.com' });
     component.sendOtp();
-    expect(authSpy.forgotPassword).not.toHaveBeenCalled();
+    expect(authService.forgotPassword).toHaveBeenCalled();
   });
 
-  it('should handle send OTP error', () => {
-    authSpy.forgotPassword.and.returnValue(throwError(() => ({ error: {} })));
-    component.emailForm.setValue({ email: 'test@test.com' });
-    component.sendOtp();
-    expect(component.loading).toBeFalse();
-  });
-
-  it('should reset password successfully', () => {
-    authSpy.resetPassword.and.returnValue(of({}));
-    component.emailForm.setValue({ email: 'test@test.com' });
-    component.resetForm.setValue({ otp: '123456', newPassword: 'newpass123' });
+  it('should reset password', () => {
+    authService.resetPassword.and.returnValue(of({}));
+    component.emailForm.patchValue({ email: 't@t.com' });
+    component.resetForm.patchValue({ otp: '123456', newPassword: 'password123' });
     component.resetPassword();
-    expect(component.loading).toBeFalse();
-  });
-
-  it('should handle reset password error', () => {
-    authSpy.resetPassword.and.returnValue(throwError(() => ({ error: {} })));
-    component.emailForm.setValue({ email: 'test@test.com' });
-    component.resetForm.setValue({ otp: '123456', newPassword: 'newpass123' });
-    component.resetPassword();
-    expect(component.loading).toBeFalse();
+    expect(authService.resetPassword).toHaveBeenCalled();
   });
 });

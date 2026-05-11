@@ -1,4 +1,11 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, ViewChild, AfterViewInit } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ChangeDetectorRef,
+  ViewChild,
+  AfterViewInit,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
@@ -18,15 +25,27 @@ import { Recharge, Transaction } from '../../core/models/recharge.model';
   selector: 'app-history',
   standalone: true,
   imports: [
-    CommonModule, MatCardModule, MatTableModule, MatSortModule,
-    MatPaginatorModule, MatTabsModule, MatIconModule, MatChipsModule,
-    MatButtonModule, MatTooltipModule
+    CommonModule,
+    MatCardModule,
+    MatTableModule,
+    MatSortModule,
+    MatPaginatorModule,
+    MatTabsModule,
+    MatIconModule,
+    MatChipsModule,
+    MatButtonModule,
+    MatTooltipModule,
   ],
   template: `
     <div class="history-page fade-in">
       <div class="page-header">
         <h1 class="page-title"><mat-icon>history</mat-icon> History</h1>
-        <button mat-stroked-button (click)="refreshData()" matTooltip="Refresh data from server" class="refresh-btn">
+        <button
+          mat-stroked-button
+          (click)="refreshData()"
+          matTooltip="Refresh data from server"
+          class="refresh-btn"
+        >
           <mat-icon>refresh</mat-icon> Refresh
         </button>
       </div>
@@ -60,16 +79,18 @@ import { Recharge, Transaction } from '../../core/models/recharge.model';
                 </ng-container>
                 <ng-container matColumnDef="createdDate">
                   <th mat-header-cell *matHeaderCellDef mat-sort-header>Date</th>
-                  <td mat-cell *matCellDef="let r">{{ r.createdDate | date:'medium' }}</td>
+                  <td mat-cell *matCellDef="let r">{{ r.createdDate | date: 'medium' }}</td>
                 </ng-container>
                 <tr mat-header-row *matHeaderRowDef="rechargeColumns"></tr>
-                <tr mat-row *matRowDef="let row; columns: rechargeColumns;"></tr>
+                <tr mat-row *matRowDef="let row; columns: rechargeColumns"></tr>
               </table>
-              <mat-paginator #rechargePaginator
+              <mat-paginator
+                #rechargePaginator
                 [pageSizeOptions]="[5, 10, 25, 50]"
                 [pageSize]="10"
                 showFirstLastButtons
-                aria-label="Select recharge page">
+                aria-label="Select recharge page"
+              >
               </mat-paginator>
             } @else {
               <div class="empty-state">
@@ -108,16 +129,18 @@ import { Recharge, Transaction } from '../../core/models/recharge.model';
                 </ng-container>
                 <ng-container matColumnDef="createdDate">
                   <th mat-header-cell *matHeaderCellDef mat-sort-header>Date</th>
-                  <td mat-cell *matCellDef="let t">{{ t.createdDate | date:'medium' }}</td>
+                  <td mat-cell *matCellDef="let t">{{ t.createdDate | date: 'medium' }}</td>
                 </ng-container>
                 <tr mat-header-row *matHeaderRowDef="txnColumns"></tr>
-                <tr mat-row *matRowDef="let row; columns: txnColumns;"></tr>
+                <tr mat-row *matRowDef="let row; columns: txnColumns"></tr>
               </table>
-              <mat-paginator #txnPaginator
+              <mat-paginator
+                #txnPaginator
                 [pageSizeOptions]="[5, 10, 25, 50]"
                 [pageSize]="10"
                 showFirstLastButtons
-                aria-label="Select transaction page">
+                aria-label="Select transaction page"
+              >
               </mat-paginator>
             } @else {
               <div class="empty-state">
@@ -130,29 +153,88 @@ import { Recharge, Transaction } from '../../core/models/recharge.model';
       </mat-tab-group>
     </div>
   `,
-  styles: [`
-    .history-page { max-width: 1100px; margin: 0 auto; padding: 16px; }
-    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-    .page-title { display: flex; align-items: center; gap: 12px; font-size: 24px; font-weight: 800; }
-    .refresh-btn {
-      border-color: var(--border-subtle) !important; color: var(--text-secondary) !important;
-      border-radius: 8px;
-    }
-    .refresh-btn:hover { background: rgba(127,90,240,0.1); color: var(--accent-purple) !important; }
-    .table-card { padding: 0; margin-top: 16px; overflow: auto; }
-    .custom-table { width: 100%; }
-    .amount { font-weight: 700; color: var(--accent-teal); }
-    .txn-id { font-family: monospace; font-size: 12px; }
-    .status-chip {
-      font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px; text-transform: uppercase;
-    }
-    .status-chip.success { background: rgba(44,182,125,0.2); color: #2cb67d; }
-    .status-chip.failed { background: rgba(229,49,112,0.2); color: #e53170; }
-    .status-chip.pending, .status-chip.initiated, .status-chip.processing { background: rgba(255,137,6,0.2); color: #ff8906; }
-    .empty-state { padding: 60px; text-align: center; }
-    .empty-state mat-icon { font-size: 48px; width: 48px; height: 48px; color: var(--text-secondary); }
-    .empty-state p { color: var(--text-secondary); margin-top: 12px; }
-  `]
+  styles: [
+    `
+      .history-page {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 16px;
+      }
+      .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+      }
+      .page-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 24px;
+        font-weight: 800;
+      }
+      .refresh-btn {
+        border-color: var(--border-subtle) !important;
+        color: var(--text-secondary) !important;
+        border-radius: 8px;
+      }
+      .refresh-btn:hover {
+        background: rgba(127, 90, 240, 0.1);
+        color: var(--accent-purple) !important;
+      }
+      .table-card {
+        padding: 0;
+        margin-top: 16px;
+        overflow: auto;
+      }
+      .custom-table {
+        width: 100%;
+      }
+      .amount {
+        font-weight: 700;
+        color: var(--accent-teal);
+      }
+      .txn-id {
+        font-family: monospace;
+        font-size: 12px;
+      }
+      .status-chip {
+        font-size: 11px;
+        font-weight: 700;
+        padding: 4px 12px;
+        border-radius: 20px;
+        text-transform: uppercase;
+      }
+      .status-chip.success {
+        background: rgba(44, 182, 125, 0.2);
+        color: #2cb67d;
+      }
+      .status-chip.failed {
+        background: rgba(229, 49, 112, 0.2);
+        color: #e53170;
+      }
+      .status-chip.pending,
+      .status-chip.initiated,
+      .status-chip.processing {
+        background: rgba(255, 137, 6, 0.2);
+        color: #ff8906;
+      }
+      .empty-state {
+        padding: 60px;
+        text-align: center;
+      }
+      .empty-state mat-icon {
+        font-size: 48px;
+        width: 48px;
+        height: 48px;
+        color: var(--text-secondary);
+      }
+      .empty-state p {
+        color: var(--text-secondary);
+        margin-top: 12px;
+      }
+    `,
+  ],
 })
 export class HistoryComponent implements OnInit, OnDestroy, AfterViewInit {
   rechargeDataSource = new MatTableDataSource<Recharge>([]);
@@ -169,7 +251,7 @@ export class HistoryComponent implements OnInit, OnDestroy, AfterViewInit {
   constructor(
     private rechargeService: RechargeService,
     private paymentService: PaymentService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -183,7 +265,8 @@ export class HistoryComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   loadData(): void {
-    this.rechargeService.getRechargeHistory()
+    this.rechargeService
+      .getRechargeHistory()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (data) => {
@@ -196,10 +279,14 @@ export class HistoryComponent implements OnInit, OnDestroy, AfterViewInit {
             }
           });
         },
-        error: () => {}
+        error: () => {
+          this.rechargeDataSource.data = [];
+          this.cdr.markForCheck();
+        },
       });
 
-    this.paymentService.getTransactionHistory()
+    this.paymentService
+      .getTransactionHistory()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (data) => {
@@ -211,7 +298,10 @@ export class HistoryComponent implements OnInit, OnDestroy, AfterViewInit {
             }
           });
         },
-        error: () => {}
+        error: () => {
+          this.txnDataSource.data = [];
+          this.cdr.markForCheck();
+        },
       });
   }
 

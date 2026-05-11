@@ -1,4 +1,9 @@
-import { HttpEvent, HttpInterceptorFn, HttpResponse, HttpErrorResponse } from '@angular/common/http';
+import {
+  HttpEvent,
+  HttpInterceptorFn,
+  HttpResponse,
+  HttpErrorResponse,
+} from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { map, catchError } from 'rxjs/operators';
@@ -24,12 +29,17 @@ export const responseInterceptor: HttpInterceptorFn = (req, next) => {
         // If the backend wraps the data in { success, message, data }
         if (event.body.success !== undefined && event.body.data !== undefined) {
           let unwrappedData = event.body.data;
-          
+
           // If the inner data is a Spring Page<T> or PagedResponse, extract the .content array
-          if (unwrappedData && typeof unwrappedData === 'object' && 'content' in unwrappedData && Array.isArray(unwrappedData.content)) {
+          if (
+            unwrappedData &&
+            typeof unwrappedData === 'object' &&
+            'content' in unwrappedData &&
+            Array.isArray(unwrappedData.content)
+          ) {
             unwrappedData = unwrappedData.content;
           }
-          
+
           // Return the clone with the cleanly unwrapped body so our services can use it directly!
           return event.clone({ body: unwrappedData });
         }
@@ -40,9 +50,11 @@ export const responseInterceptor: HttpInterceptorFn = (req, next) => {
       switch (error.status) {
         case 401:
           // Skip token/session handling for public auth endpoints (OTP, etc.)
-          if (!req.url.includes('/api/auth/send-otp') &&
-              !req.url.includes('/api/auth/verify-phone-otp') &&
-              !req.url.includes('/api/auth/verify-otp')) {
+          if (
+            !req.url.includes('/api/auth/send-otp') &&
+            !req.url.includes('/api/auth/verify-phone-otp') &&
+            !req.url.includes('/api/auth/verify-otp')
+          ) {
             // Token is invalid/expired. Clear it immediately to avoid circular dependencies with AuthService
             localStorage.removeItem('accessToken');
             localStorage.removeItem('refreshToken');
@@ -86,6 +98,6 @@ export const responseInterceptor: HttpInterceptorFn = (req, next) => {
       }
 
       return throwError(() => error);
-    })
+    }),
   );
 };

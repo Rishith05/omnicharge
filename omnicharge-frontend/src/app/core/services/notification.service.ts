@@ -35,7 +35,12 @@ export class NotificationService {
   }
 
   /** Push a local in-app notification (works in both mock and real mode for immediate UI feedback) */
-  addLocalNotification(title: string, message: string, category: string, type: 'IN_APP' | 'EMAIL' | 'SMS' = 'IN_APP'): void {
+  addLocalNotification(
+    title: string,
+    message: string,
+    category: string,
+    type: 'IN_APP' | 'EMAIL' | 'SMS' = 'IN_APP',
+  ): void {
     const current = this.localNotifications.value;
     const newNotif: Notification = {
       id: Date.now() + Math.floor(Math.random() * 1000),
@@ -47,7 +52,7 @@ export class NotificationService {
       isRead: false,
       metadata: null,
       createdDate: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     };
     this.saveNotifications([newNotif, ...current]);
   }
@@ -66,25 +71,29 @@ export class NotificationService {
     this.addLocalNotification(
       'Payment Successful ✅',
       `₹${params.amount} paid via Razorpay. Transaction ID: ${params.transactionId}`,
-      'PAYMENT', 'IN_APP'
+      'PAYMENT',
+      'IN_APP',
     );
     // 2. Recharge Success — IN_APP
     this.addLocalNotification(
       'Recharge Successful 🎉',
       `${params.operatorName} ${params.planData} plan activated for ${params.mobileNumber}`,
-      'RECHARGE', 'IN_APP'
+      'RECHARGE',
+      'IN_APP',
     );
     // 3. SMS notification to user's number
     this.addLocalNotification(
       `SMS → ${params.mobileNumber}`,
       `OmniCharge: ₹${params.amount} recharge successful for ${params.mobileNumber}. ${params.operatorName} ${params.planData} activated. Txn: ${params.transactionId}`,
-      'RECHARGE', 'SMS'
+      'RECHARGE',
+      'SMS',
     );
     // 4. Email notification to user's email
     this.addLocalNotification(
       `Email → ${params.userEmail}`,
       `Your recharge of ₹${params.amount} for ${params.mobileNumber} (${params.operatorName}) has been completed successfully. Plan: ${params.planData}. Transaction ID: ${params.transactionId}`,
-      'PAYMENT', 'EMAIL'
+      'PAYMENT',
+      'EMAIL',
     );
 
     // In real mode, backend also sends notifications via RabbitMQ event pipeline
@@ -101,9 +110,7 @@ export class NotificationService {
 
   getUnreadCount(): Observable<number> {
     if (environment.useMockApi) {
-      return this.notifications$.pipe(
-        map(notifs => notifs.filter(n => !n.isRead).length)
-      );
+      return this.notifications$.pipe(map((notifs) => notifs.filter((n) => !n.isRead).length));
     }
     return this.http.get<number>(`${this.apiUrl}/unread-count`);
   }
@@ -111,7 +118,7 @@ export class NotificationService {
   markAsRead(id: number): Observable<void> {
     if (environment.useMockApi) {
       const current = this.localNotifications.value;
-      const n = current.find(x => x.id === id);
+      const n = current.find((x) => x.id === id);
       if (n) {
         n.isRead = true;
         this.saveNotifications([...current]);
@@ -123,7 +130,7 @@ export class NotificationService {
 
   markAllAsRead(): Observable<void> {
     if (environment.useMockApi) {
-      const current = this.localNotifications.value.map(n => ({ ...n, isRead: true }));
+      const current = this.localNotifications.value.map((n) => ({ ...n, isRead: true }));
       this.saveNotifications(current);
       return of(undefined).pipe(delay(100));
     }

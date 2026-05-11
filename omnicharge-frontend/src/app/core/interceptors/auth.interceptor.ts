@@ -26,23 +26,20 @@ const PUBLIC_AUTH_ENDPOINTS = [
 ];
 
 /** Endpoints that optionally include a token if available but don't require it */
-const OPTIONAL_AUTH_ENDPOINTS = [
-  '/api/auth/refresh-token',
-  '/api/auth/google',
-];
+const OPTIONAL_AUTH_ENDPOINTS = ['/api/auth/refresh-token', '/api/auth/google'];
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   const token = authService.getToken();
 
   // Public endpoints: NEVER send auth token to avoid gateway 401
-  const isPublic = PUBLIC_AUTH_ENDPOINTS.some(ep => req.url.includes(ep));
+  const isPublic = PUBLIC_AUTH_ENDPOINTS.some((ep) => req.url.includes(ep));
   if (isPublic) {
     return next(req);
   }
 
   // Optional auth endpoints: send token if available, but don't retry on 401
-  const isOptional = OPTIONAL_AUTH_ENDPOINTS.some(ep => req.url.includes(ep));
+  const isOptional = OPTIONAL_AUTH_ENDPOINTS.some((ep) => req.url.includes(ep));
   if (isOptional) {
     if (token) {
       const cloned = req.clone({ setHeaders: { Authorization: `Bearer ${token}` } });
@@ -55,8 +52,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   if (token) {
     const cloned = req.clone({
       setHeaders: {
-        Authorization: `Bearer ${token}`
-      }
+        Authorization: `Bearer ${token}`,
+      },
     });
 
     return next(cloned).pipe(
@@ -67,7 +64,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
             switchMap(() => {
               const newToken = authService.getToken();
               const retryReq = req.clone({
-                setHeaders: { Authorization: `Bearer ${newToken}` }
+                setHeaders: { Authorization: `Bearer ${newToken}` },
               });
               return next(retryReq);
             }),
@@ -75,11 +72,11 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
               // Refresh also failed — force logout
               authService.logout();
               return throwError(() => refreshError);
-            })
+            }),
           );
         }
         return throwError(() => error);
-      })
+      }),
     );
   }
 

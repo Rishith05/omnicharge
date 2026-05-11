@@ -23,7 +23,7 @@ describe('authGuard', () => {
     authServiceSpy.isLoggedIn.and.returnValue(true);
 
     const result = TestBed.runInInjectionContext(() =>
-      authGuard({} as ActivatedRouteSnapshot, { url: '/dashboard' } as RouterStateSnapshot)
+      authGuard({} as ActivatedRouteSnapshot, { url: '/dashboard' } as RouterStateSnapshot),
     );
 
     expect(result).toBeTrue();
@@ -33,13 +33,12 @@ describe('authGuard', () => {
     authServiceSpy.isLoggedIn.and.returnValue(false);
 
     const result = TestBed.runInInjectionContext(() =>
-      authGuard({} as ActivatedRouteSnapshot, { url: '/dashboard' } as RouterStateSnapshot)
+      authGuard({} as ActivatedRouteSnapshot, { url: '/dashboard' } as RouterStateSnapshot),
     );
 
     expect(result).toBeFalse();
-    expect(routerSpy.navigate).toHaveBeenCalledWith(
-      ['/auth/login'],
-      { queryParams: { returnUrl: '/dashboard' } }
-    );
+    expect(routerSpy.navigate).toHaveBeenCalledWith(['/auth/login'], {
+      queryParams: { returnUrl: '/dashboard' },
+    });
   });
 });

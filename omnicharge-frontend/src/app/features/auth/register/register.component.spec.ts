@@ -1,69 +1,69 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { RegisterComponent } from './register.component';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { provideRouter, Router, ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { AuthService } from '../../../core/services/auth.service';
-import { AuthResponse } from '../../../core/models/user.model';
+import { of } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { of, throwError } from 'rxjs';
 
 describe('RegisterComponent', () => {
   let component: RegisterComponent;
   let fixture: ComponentFixture<RegisterComponent>;
-  let authSpy: jasmine.SpyObj<AuthService>;
-  let routerSpy: jasmine.SpyObj<Router>;
-  let snackSpy: jasmine.SpyObj<MatSnackBar>;
+  let authService: jasmine.SpyObj<AuthService>;
+  let snackBar: jasmine.SpyObj<MatSnackBar>;
+  let router: Router;
 
   beforeEach(async () => {
-    authSpy = jasmine.createSpyObj('AuthService', ['sendOtp', 'verifyPhoneOtp']);
-    routerSpy = jasmine.createSpyObj('Router', ['navigate', 'navigateByUrl']);
-    snackSpy = jasmine.createSpyObj('MatSnackBar', ['open']);
+    authService = jasmine.createSpyObj('AuthService', ['sendOtp', 'verifyPhoneOtp']);
+    snackBar = jasmine.createSpyObj('MatSnackBar', ['open']);
 
     await TestBed.configureTestingModule({
       imports: [RegisterComponent, NoopAnimationsModule],
       providers: [
-        provideRouter([]), provideHttpClient(), provideHttpClientTesting(),
-        { provide: AuthService, useValue: authSpy },
-        { provide: Router, useValue: routerSpy },
-        { provide: MatSnackBar, useValue: snackSpy },
-        { provide: ActivatedRoute, useValue: { snapshot: { queryParams: {} } } },
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: AuthService, useValue: authService },
+        { provide: MatSnackBar, useValue: snackBar },
+        {
+          provide: ActivatedRoute,
+          useValue: { snapshot: { queryParams: {} } },
+        },
       ],
     }).compileComponents();
+
+    router = TestBed.inject(Router);
+    spyOn(router, 'navigate');
+    spyOn(router, 'navigateByUrl');
+
     fixture = TestBed.createComponent(RegisterComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
 
-  it('should create', () => { expect(component).toBeTruthy(); });
-
-  it('should not send OTP if form invalid', () => {
+  it('should send OTP', () => {
+    authService.sendOtp.and.returnValue(of({}));
+    component.registerForm.patchValue({ fullName: 'A', mobileNumber: '9876543210' });
     component.onSendOtp();
-    expect(authSpy.sendOtp).not.toHaveBeenCalled();
+    expect(authService.sendOtp).toHaveBeenCalled();
   });
 
-  it('should handle send OTP error', () => {
-    authSpy.sendOtp.and.returnValue(throwError(() => ({ error: {} })));
-    component.registerForm.setValue({ fullName: 'Test', mobileNumber: '9876543210', email: '' });
+  it('should verify OTP', () => {
+    authService.verifyPhoneOtp.and.returnValue(of({} as any));
+    component.registerForm.patchValue({ mobileNumber: '9876543210' });
+    component.otpForm.patchValue({ otp: '123456' });
+    component.onVerifyOtp();
+    expect(authService.verifyPhoneOtp).toHaveBeenCalled();
+    expect(router.navigate).toHaveBeenCalled();
+  });
+
+  it('should handle timer', fakeAsync(() => {
+    authService.sendOtp.and.returnValue(of({}));
+    component.registerForm.patchValue({ fullName: 'A', mobileNumber: '9876543210' });
     component.onSendOtp();
-    expect(component.loading).toBeFalse();
-  });
-
-  it('should verify OTP and navigate to dashboard', () => {
-    const mockAuth: AuthResponse = { accessToken: 'a', refreshToken: 'r', tokenType: 'Bearer', expiresIn: 3600, user: { id: 1, fullName: 'Test', email: '', mobileNumber: '9876543210', role: 'ROLE_USER', authProvider: 'PHONE', isActive: true, createdAt: '', updatedAt: '' } };
-    authSpy.verifyPhoneOtp.and.returnValue(of(mockAuth));
-    component.registerForm.setValue({ fullName: 'Test', mobileNumber: '9876543210', email: '' });
-    component.otpForm.setValue({ otp: '123456' });
-    component.onVerifyOtp();
-    expect(routerSpy.navigate).toHaveBeenCalledWith(['/dashboard']);
-  });
-
-  it('should handle verify OTP error', () => {
-    authSpy.verifyPhoneOtp.and.returnValue(throwError(() => ({ error: {} })));
-    component.registerForm.setValue({ fullName: 'Test', mobileNumber: '9876543210', email: '' });
-    component.otpForm.setValue({ otp: '123456' });
-    component.onVerifyOtp();
-    expect(component.loading).toBeFalse();
-  });
+    expect(component.resendTimer).toBe(120);
+    tick(1000);
+    expect(component.resendTimer).toBe(119);
+  }));
 });

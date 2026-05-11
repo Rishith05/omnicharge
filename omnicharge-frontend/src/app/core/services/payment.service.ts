@@ -42,7 +42,7 @@ export class PaymentService {
         razorpayOrderId: 'order_' + Math.random().toString(36).substring(2, 12),
         amount: Math.round(payload.amount * 100),
         currency: 'INR',
-        rechargeId: payload.rechargeId
+        rechargeId: payload.rechargeId,
       }).pipe(delay(800));
     }
     return this.http.post(`${this.apiUrl}/process`, payload);
@@ -71,24 +71,24 @@ export class PaymentService {
         order_id: options.orderId,
         prefill: {
           email: options.userEmail || '',
-          contact: options.userPhone || ''
+          contact: options.userPhone || '',
         },
         theme: {
-          color: '#7f5af0'
+          color: '#7f5af0',
         },
         handler: (response: any) => {
           // Payment successful — Razorpay returns payment_id, order_id, signature
           resolve({
             razorpayPaymentId: response.razorpay_payment_id,
             razorpayOrderId: response.razorpay_order_id,
-            razorpaySignature: response.razorpay_signature
+            razorpaySignature: response.razorpay_signature,
           });
         },
         modal: {
           ondismiss: () => {
             reject(new Error('Payment cancelled by user'));
-          }
-        }
+          },
+        },
       };
 
       try {
@@ -99,7 +99,11 @@ export class PaymentService {
           });
           rzp.open();
         } else {
-          reject(new Error('Razorpay SDK not loaded. Please check your internet connection and try again.'));
+          reject(
+            new Error(
+              'Razorpay SDK not loaded. Please check your internet connection and try again.',
+            ),
+          );
         }
       } catch (e) {
         reject(e);
@@ -124,7 +128,7 @@ export class PaymentService {
         paymentMethod: 'RAZORPAY',
         status: 'SUCCESS',
         razorpayOrderId: paymentData.razorpayOrderId || 'order_mock',
-        createdDate: new Date().toISOString()
+        createdDate: new Date().toISOString(),
       };
       // Store in local history
       const current = this.transactionHistory.value;
@@ -133,17 +137,19 @@ export class PaymentService {
     }
 
     // Call the webhook endpoint to manually confirm the saga payment
-    return this.http.post<any>(
-      `${this.apiUrl}/webhook/confirm/${paymentData.transactionId}?razorpayPaymentId=${paymentData.razorpayPaymentId}&razorpaySignature=${paymentData.razorpaySignature}`,
-      {}
-    ).pipe(
-      map((txn: any) => {
-        // Store in local history
-        const current = this.transactionHistory.value;
-        this.saveTransactions([txn, ...current]);
-        return txn;
-      })
-    );
+    return this.http
+      .post<any>(
+        `${this.apiUrl}/webhook/confirm/${paymentData.transactionId}?razorpayPaymentId=${paymentData.razorpayPaymentId}&razorpaySignature=${paymentData.razorpaySignature}`,
+        {},
+      )
+      .pipe(
+        map((txn: any) => {
+          // Store in local history
+          const current = this.transactionHistory.value;
+          this.saveTransactions([txn, ...current]);
+          return txn;
+        }),
+      );
   }
 
   /** Record a failed transaction (saga compensation) */
@@ -158,7 +164,7 @@ export class PaymentService {
         paymentMethod: 'RAZORPAY',
         status: 'FAILED',
         razorpayOrderId: orderId,
-        createdDate: new Date().toISOString()
+        createdDate: new Date().toISOString(),
       };
       const current = this.transactionHistory.value;
       this.saveTransactions([failedTxn, ...current]);
@@ -186,7 +192,9 @@ export class PaymentService {
       if (userStr) {
         return JSON.parse(userStr).id || 0;
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     return 0;
   }
 }

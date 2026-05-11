@@ -14,9 +14,17 @@ import { AuthService } from '../../services/auth.service';
   selector: 'app-user-layout',
   standalone: true,
   imports: [
-    CommonModule, RouterOutlet, RouterLink, RouterLinkActive,
-    MatToolbarModule, MatSidenavModule, MatListModule,
-    MatIconModule, MatButtonModule, MatBadgeModule, MatMenuModule
+    CommonModule,
+    RouterOutlet,
+    RouterLink,
+    RouterLinkActive,
+    MatToolbarModule,
+    MatSidenavModule,
+    MatListModule,
+    MatIconModule,
+    MatButtonModule,
+    MatBadgeModule,
+    MatMenuModule,
   ],
   template: `
     <mat-sidenav-container class="app-container">
@@ -86,24 +94,88 @@ import { AuthService } from '../../services/auth.service';
       </mat-sidenav-content>
     </mat-sidenav-container>
   `,
-  styles: [`
-    .app-container { height: 100vh; }
-    .app-sidenav { width: 260px; background: var(--bg-secondary); border-right: 1px solid var(--border-subtle); }
-    .sidenav-header { padding: 24px; border-bottom: 1px solid var(--border-subtle); }
-    .logo { display: flex; align-items: center; gap: 12px; }
-    .logo-icon { font-size: 32px; width: 32px; height: 32px; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .logo-text { font-size: 22px; font-weight: 800; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -0.5px; }
-    .nav-list { padding-top: 8px; }
-    .nav-list a { margin: 4px 12px; border-radius: var(--radius-sm); transition: var(--transition); }
-    .nav-list a:hover { background: var(--bg-glass); }
-    .active-link { background: rgba(127, 90, 240, 0.15) !important; border-left: 3px solid var(--accent-purple); }
-    .nav-divider { height: 1px; background: var(--border-subtle); margin: 16px 20px; }
-    .nav-section-label { font-size: 11px; font-weight: 700; color: var(--text-secondary); padding: 0 28px; margin-bottom: 4px; letter-spacing: 1.5px; }
-    .app-toolbar { background: transparent !important; border-bottom: 1px solid var(--border-subtle); color: var(--text-primary); }
-    .toolbar-spacer { flex: 1 1 auto; }
-    .greeting { font-size: 14px; color: var(--text-secondary); margin-right: 8px; }
-    .main-content { padding: 24px; min-height: calc(100vh - 64px); }
-  `]
+  styles: [
+    `
+      .app-container {
+        height: 100vh;
+      }
+      .app-sidenav {
+        width: 260px;
+        background: var(--bg-secondary);
+        border-right: 1px solid var(--border-subtle);
+      }
+      .sidenav-header {
+        padding: 24px;
+        border-bottom: 1px solid var(--border-subtle);
+      }
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .logo-icon {
+        font-size: 32px;
+        width: 32px;
+        height: 32px;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .logo-text {
+        font-size: 22px;
+        font-weight: 800;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        letter-spacing: -0.5px;
+      }
+      .nav-list {
+        padding-top: 8px;
+      }
+      .nav-list a {
+        margin: 4px 12px;
+        border-radius: var(--radius-sm);
+        transition: var(--transition);
+      }
+      .nav-list a:hover {
+        background: var(--bg-glass);
+      }
+      .active-link {
+        background: rgba(127, 90, 240, 0.15) !important;
+        border-left: 3px solid var(--accent-purple);
+      }
+      .nav-divider {
+        height: 1px;
+        background: var(--border-subtle);
+        margin: 16px 20px;
+      }
+      .nav-section-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--text-secondary);
+        padding: 0 28px;
+        margin-bottom: 4px;
+        letter-spacing: 1.5px;
+      }
+      .app-toolbar {
+        background: transparent !important;
+        border-bottom: 1px solid var(--border-subtle);
+        color: var(--text-primary);
+      }
+      .toolbar-spacer {
+        flex: 1 1 auto;
+      }
+      .greeting {
+        font-size: 14px;
+        color: var(--text-secondary);
+        margin-right: 8px;
+      }
+      .main-content {
+        padding: 24px;
+        min-height: calc(100vh - 64px);
+      }
+    `,
+  ],
 })
 export class UserLayoutComponent {
   constructor(public authService: AuthService) {}

@@ -12,13 +12,19 @@ describe('AdminLayoutComponent', () => {
   let fixture: ComponentFixture<AdminLayoutComponent>;
 
   beforeEach(async () => {
-    const authSpy = jasmine.createSpyObj('AuthService', ['getCurrentUser', 'isLoggedIn', 'isAdmin', 'logout'], { currentUser$: of(null) });
+    const authSpy = jasmine.createSpyObj(
+      'AuthService',
+      ['getCurrentUser', 'isLoggedIn', 'isAdmin', 'logout'],
+      { currentUser$: of(null) },
+    );
     authSpy.getCurrentUser.and.returnValue({ fullName: 'Admin' });
 
     await TestBed.configureTestingModule({
       imports: [AdminLayoutComponent, NoopAnimationsModule],
       providers: [
-        provideRouter([]), provideHttpClient(), provideHttpClientTesting(),
+        provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
         { provide: AuthService, useValue: authSpy },
       ],
     }).compileComponents();
@@ -27,5 +33,7 @@ describe('AdminLayoutComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => { expect(component).toBeTruthy(); });
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
 });

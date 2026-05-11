@@ -56,7 +56,7 @@ export class CacheService {
     const entry: CacheEntry<T> = {
       data,
       timestamp: Date.now(),
-      ttl: ttlMs
+      ttl: ttlMs,
     };
 
     this.memoryCache.set(key, entry);
@@ -73,7 +73,9 @@ export class CacheService {
     this.memoryCache.delete(key);
     try {
       sessionStorage.removeItem(`omni_cache_${key}`);
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
 
   /** Invalidate all cache entries matching a prefix */
@@ -94,8 +96,10 @@ export class CacheService {
           keysToRemove.push(key);
         }
       }
-      keysToRemove.forEach(k => sessionStorage.removeItem(k));
-    } catch { /* ignore */ }
+      keysToRemove.forEach((k) => sessionStorage.removeItem(k));
+    } catch {
+      /* ignore */
+    }
   }
 
   /** Clear all cache */
@@ -109,8 +113,10 @@ export class CacheService {
           keysToRemove.push(key);
         }
       }
-      keysToRemove.forEach(k => sessionStorage.removeItem(k));
-    } catch { /* ignore */ }
+      keysToRemove.forEach((k) => sessionStorage.removeItem(k));
+    } catch {
+      /* ignore */
+    }
   }
 
   private isExpired(entry: CacheEntry<any>): boolean {

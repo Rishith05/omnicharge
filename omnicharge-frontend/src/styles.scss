@@ -5,17 +5,19 @@ $omnicharge-primary: mat.m2-define-palette(mat.$m2-deep-purple-palette, 600, 400
 $omnicharge-accent: mat.m2-define-palette(mat.$m2-teal-palette, 500, 300, 700);
 $omnicharge-warn: mat.m2-define-palette(mat.$m2-red-palette, 600);
 
-$omnicharge-theme: mat.m2-define-dark-theme((
-  color: (
-    primary: $omnicharge-primary,
-    accent: $omnicharge-accent,
-    warn: $omnicharge-warn,
-  ),
-  typography: mat.m2-define-typography-config(
-    $font-family: '"Inter", "Roboto", "Helvetica Neue", sans-serif',
-  ),
-  density: 0,
-));
+$omnicharge-theme: mat.m2-define-dark-theme(
+  (
+    color: (
+      primary: $omnicharge-primary,
+      accent: $omnicharge-accent,
+      warn: $omnicharge-warn,
+    ),
+    typography: mat.m2-define-typography-config(
+        $font-family: '"Inter", "Roboto", "Helvetica Neue", sans-serif',
+      ),
+    density: 0,
+  )
+);
 
 @include mat.all-component-themes($omnicharge-theme);
 
@@ -34,7 +36,11 @@ $omnicharge-theme: mat.m2-define-dark-theme((
   --accent-teal: #2cb67d;
   --accent-amber: #ff8906;
   --gradient-primary: linear-gradient(135deg, #7f5af0 0%, #2cb67d 100%);
-  --gradient-card: linear-gradient(135deg, rgba(127, 90, 240, 0.1) 0%, rgba(44, 182, 125, 0.1) 100%);
+  --gradient-card: linear-gradient(
+    135deg,
+    rgba(127, 90, 240, 0.1) 0%,
+    rgba(44, 182, 125, 0.1) 100%
+  );
   --shadow-glow: 0 0 30px rgba(127, 90, 240, 0.15);
   --border-subtle: rgba(255, 255, 255, 0.08);
   --radius: 16px;
@@ -43,13 +49,16 @@ $omnicharge-theme: mat.m2-define-dark-theme((
 }
 
 // Global Resets
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-html, body {
+html,
+body {
   height: 100%;
   margin: 0;
   font-family: 'Inter', 'Roboto', 'Helvetica Neue', sans-serif;
@@ -111,8 +120,14 @@ html, body {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .slide-up {
@@ -120,8 +135,14 @@ html, body {
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 // Snackbar

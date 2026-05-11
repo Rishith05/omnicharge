@@ -14,7 +14,10 @@ export class OperatorService {
   private mockOperators: Operator[] = [];
   private mockPlans: Record<number, Plan[]> = {};
 
-  constructor(private http: HttpClient, private cacheService: CacheService) {
+  constructor(
+    private http: HttpClient,
+    private cacheService: CacheService,
+  ) {
     this.loadMockState();
   }
 
@@ -32,14 +35,14 @@ export class OperatorService {
       if (storedPlans) {
         this.mockPlans = JSON.parse(storedPlans);
       } else {
-        Object.keys(MOCK_PLANS).forEach(key => {
+        Object.keys(MOCK_PLANS).forEach((key) => {
           this.mockPlans[+key] = [...MOCK_PLANS[+key]];
         });
         this.savePlans();
       }
     } catch {
       this.mockOperators = [...MOCK_OPERATORS];
-      Object.keys(MOCK_PLANS).forEach(key => {
+      Object.keys(MOCK_PLANS).forEach((key) => {
         this.mockPlans[+key] = [...MOCK_PLANS[+key]];
       });
     }
@@ -57,11 +60,11 @@ export class OperatorService {
     if (environment.useMockApi) {
       if (this.mockOperators.length > 0) {
         // Return first active mock operator for any number
-        const op = this.mockOperators.find(o => o.isActive) || this.mockOperators[0];
+        const op = this.mockOperators.find((o) => o.isActive) || this.mockOperators[0];
         return of({
           mobileNumber,
           operator: op,
-          detectionMethod: 'MOCK_DETECTION'
+          detectionMethod: 'MOCK_DETECTION',
         }).pipe(delay(600));
       }
       return of(detectMockOperator(mobileNumber)).pipe(delay(600));
@@ -69,7 +72,7 @@ export class OperatorService {
     const params = new HttpParams().set('mobileNumber', mobileNumber);
     return this.http.get<any>(`${this.apiUrl}/api/operators/detect`, { params }).pipe(
       timeout(10000),
-      map(res => {
+      map((res) => {
         // Map backend response (operatorId, operatorName) to frontend Operator object
         return {
           mobileNumber: mobileNumber,
@@ -79,11 +82,11 @@ export class OperatorService {
             code: res.operatorCode,
             isActive: true,
             createdAt: '',
-            updatedAt: ''
+            updatedAt: '',
           },
-          detectionMethod: 'REAL_API'
+          detectionMethod: 'REAL_API',
         } as OperatorDetectionResponse;
-      })
+      }),
     );
   }
 
@@ -99,39 +102,42 @@ export class OperatorService {
     if (environment.useMockApi) {
       return of(this.mockPlans[operatorId] ?? []).pipe(
         delay(400),
-        tap(plans => this.cacheService.set(cacheKey, plans))
+        tap((plans) => this.cacheService.set(cacheKey, plans)),
       );
     }
-    const params = new HttpParams()
-      .set('operatorId', operatorId.toString())
-      .set('size', '50'); // get enough plans for UI
+    const params = new HttpParams().set('operatorId', operatorId.toString()).set('size', '50'); // get enough plans for UI
     return this.http.get<any[]>(`${this.apiUrl}/api/plans/search`, { params }).pipe(
       map((plans: any[]) => {
         // The robust responseInterceptor already unwraps Page<T> into a raw array.
         if (!Array.isArray(plans)) return [];
-        return plans.map(p => ({
-            id: p.id,
-            operatorId: p.operatorId,
-            operatorName: p.operatorName,
-            name: p.planName || p.name,           // Spring sends planName
-            price: p.price,
-            validity: p.validityDays || p.validity, // Spring sends validityDays
-            data: p.dataLimit || p.data,          // Spring sends dataLimit
-            description: p.description || [p.callBenefit, p.smsBenefit, p.additionalBenefits].filter(Boolean).join(' • '),
-            category: p.category,
-            isActive: p.isActive,
-            createdAt: p.createdAt || '',
-            updatedAt: p.updatedAt || ''
-        } as Plan));
+        return plans.map(
+          (p) =>
+            ({
+              id: p.id,
+              operatorId: p.operatorId,
+              operatorName: p.operatorName,
+              name: p.planName || p.name, // Spring sends planName
+              price: p.price,
+              validity: p.validityDays || p.validity, // Spring sends validityDays
+              data: p.dataLimit || p.data, // Spring sends dataLimit
+              description:
+                p.description ||
+                [p.callBenefit, p.smsBenefit, p.additionalBenefits].filter(Boolean).join(' • '),
+              category: p.category,
+              isActive: p.isActive,
+              createdAt: p.createdAt || '',
+              updatedAt: p.updatedAt || '',
+            }) as Plan,
+        );
       }),
-      tap(plans => this.cacheService.set(cacheKey, plans))
+      tap((plans) => this.cacheService.set(cacheKey, plans)),
     );
   }
 
   getPlanById(planId: number): Observable<Plan> {
     if (environment.useMockApi) {
       const allPlans = Object.values(this.mockPlans).flat();
-      const plan = allPlans.find(p => p.id === planId);
+      const plan = allPlans.find((p) => p.id === planId);
       return of(plan!).pipe(delay(200));
     }
     return this.http.get<Plan>(`${this.apiUrl}/api/plans/${planId}`);
@@ -149,12 +155,12 @@ export class OperatorService {
     if (environment.useMockApi) {
       return of([...this.mockOperators]).pipe(
         delay(300),
-        tap(ops => this.cacheService.set(cacheKey, ops))
+        tap((ops) => this.cacheService.set(cacheKey, ops)),
       );
     }
-    return this.http.get<Operator[]>(`${this.apiUrl}/api/operators/active`).pipe(
-      tap(ops => this.cacheService.set(cacheKey, ops))
-    );
+    return this.http
+      .get<Operator[]>(`${this.apiUrl}/api/operators/active`)
+      .pipe(tap((ops) => this.cacheService.set(cacheKey, ops)));
   }
 
   // Admin CRUD — with mock support
@@ -166,7 +172,7 @@ export class OperatorService {
         code: operator.code || '',
         isActive: true,
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       this.mockOperators.push(newOp);
       this.mockPlans[newOp.id] = [];
@@ -178,7 +184,7 @@ export class OperatorService {
     const payload = {
       name: operator.name,
       code: operator.code,
-      category: 'PREPAID' // Defaulting to PREPAID as it's required by backend
+      category: 'PREPAID', // Defaulting to PREPAID as it's required by backend
     };
     return this.http.post<Operator>(`${this.apiUrl}/api/admin/operators`, payload);
   }
@@ -186,9 +192,13 @@ export class OperatorService {
   updateOperator(id: number, operator: Partial<Operator>): Observable<Operator> {
     this.cacheService.invalidate('all_operators');
     if (environment.useMockApi) {
-      const idx = this.mockOperators.findIndex(o => o.id === id);
+      const idx = this.mockOperators.findIndex((o) => o.id === id);
       if (idx >= 0) {
-        this.mockOperators[idx] = { ...this.mockOperators[idx], ...operator, updatedAt: new Date().toISOString() };
+        this.mockOperators[idx] = {
+          ...this.mockOperators[idx],
+          ...operator,
+          updatedAt: new Date().toISOString(),
+        };
         this.saveOperators();
       }
       return of(this.mockOperators[idx]).pipe(delay(300));
@@ -196,7 +206,7 @@ export class OperatorService {
     const payload = {
       name: operator.name,
       code: operator.code,
-      category: 'PREPAID' // Defaulting to PREPAID as it's required by backend
+      category: 'PREPAID', // Defaulting to PREPAID as it's required by backend
     };
     return this.http.put<Operator>(`${this.apiUrl}/api/admin/operators/${id}`, payload);
   }
@@ -205,7 +215,7 @@ export class OperatorService {
     this.cacheService.invalidate('all_operators');
     this.cacheService.invalidateByPrefix('plans_operator_');
     if (environment.useMockApi) {
-      this.mockOperators = this.mockOperators.filter(o => o.id !== id);
+      this.mockOperators = this.mockOperators.filter((o) => o.id !== id);
       delete this.mockPlans[id];
       this.saveOperators();
       this.savePlans();
@@ -216,7 +226,7 @@ export class OperatorService {
 
   createPlan(operatorId: number, plan: Partial<Plan>): Observable<Plan> {
     if (environment.useMockApi) {
-      const opName = this.mockOperators.find(o => o.id === operatorId)?.name || '';
+      const opName = this.mockOperators.find((o) => o.id === operatorId)?.name || '';
       const newPlan: Plan = {
         id: Math.floor(Math.random() * 10000),
         operatorId,
@@ -229,7 +239,7 @@ export class OperatorService {
         category: plan.category || 'Recommended',
         isActive: true,
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       if (!this.mockPlans[operatorId]) this.mockPlans[operatorId] = [];
       this.mockPlans[operatorId].push(newPlan);
@@ -242,7 +252,7 @@ export class OperatorService {
       validityDays: plan.validity,
       dataLimit: plan.data,
       additionalBenefits: plan.description,
-      category: plan.category?.toUpperCase() || 'RECOMMENDED'
+      category: plan.category?.toUpperCase() || 'RECOMMENDED',
     };
     return this.http.post<Plan>(`${this.apiUrl}/api/admin/operators/${operatorId}/plans`, payload);
   }
@@ -250,7 +260,7 @@ export class OperatorService {
   updatePlan(operatorId: number, planId: number, plan: Partial<Plan>): Observable<Plan> {
     if (environment.useMockApi) {
       const plans = this.mockPlans[operatorId] || [];
-      const idx = plans.findIndex(p => p.id === planId);
+      const idx = plans.findIndex((p) => p.id === planId);
       if (idx >= 0) {
         plans[idx] = { ...plans[idx], ...plan, updatedAt: new Date().toISOString() };
         this.savePlans();
@@ -263,7 +273,7 @@ export class OperatorService {
       validityDays: plan.validity,
       dataLimit: plan.data,
       additionalBenefits: plan.description,
-      category: plan.category?.toUpperCase() || 'RECOMMENDED'
+      category: plan.category?.toUpperCase() || 'RECOMMENDED',
     };
     return this.http.put<Plan>(`${this.apiUrl}/api/admin/operators/plans/${planId}`, payload);
   }
@@ -271,7 +281,7 @@ export class OperatorService {
   deletePlan(operatorId: number, planId: number): Observable<void> {
     if (environment.useMockApi) {
       if (this.mockPlans[operatorId]) {
-        this.mockPlans[operatorId] = this.mockPlans[operatorId].filter(p => p.id !== planId);
+        this.mockPlans[operatorId] = this.mockPlans[operatorId].filter((p) => p.id !== planId);
         this.savePlans();
       }
       return of(undefined).pipe(delay(300));
@@ -281,7 +291,7 @@ export class OperatorService {
 
   toggleOperatorStatus(id: number, activate: boolean): Observable<Operator> {
     if (environment.useMockApi) {
-      const idx = this.mockOperators.findIndex(o => o.id === id);
+      const idx = this.mockOperators.findIndex((o) => o.id === id);
       if (idx >= 0) {
         this.mockOperators[idx].isActive = activate;
         this.mockOperators[idx].updatedAt = new Date().toISOString();
@@ -297,7 +307,7 @@ export class OperatorService {
   togglePlanStatus(operatorId: number, planId: number, activate: boolean): Observable<Plan> {
     if (environment.useMockApi) {
       const plans = this.mockPlans[operatorId] || [];
-      const idx = plans.findIndex(p => p.id === planId);
+      const idx = plans.findIndex((p) => p.id === planId);
       if (idx >= 0) {
         plans[idx].isActive = activate;
         plans[idx].updatedAt = new Date().toISOString();
@@ -307,6 +317,9 @@ export class OperatorService {
       return of({} as Plan);
     }
     const action = activate ? 'activate' : 'deactivate';
-    return this.http.patch<Plan>(`${this.apiUrl}/api/admin/operators/plans/${planId}/${action}`, {});
+    return this.http.patch<Plan>(
+      `${this.apiUrl}/api/admin/operators/plans/${planId}/${action}`,
+      {},
+    );
   }
 }

@@ -1,6 +1,7 @@
 # OmniCharge Frontend - Comprehensive Architecture Guide
 
 ## 📋 Table of Contents
+
 1. [Project Overview](#project-overview)
 2. [Technology Stack](#technology-stack)
 3. [Project Structure](#project-structure)
@@ -19,6 +20,7 @@
 ## 🎯 Project Overview
 
 **OmniCharge Frontend** is a modern Angular 21+ standalone component-based application that provides:
+
 - 📱 Mobile recharge services (Phone OTP authentication)
 - 💳 Razorpay payment integration
 - 📊 Admin dashboard for system management
@@ -27,6 +29,7 @@
 - 📈 Recharge history tracking
 
 **Key Features:**
+
 - Zoneless change detection (no NgZone)
 - Functional routing with lazy loading
 - Standalone components exclusively
@@ -38,24 +41,29 @@
 ## 🛠 Technology Stack
 
 **Core Framework:**
+
 - **Angular 21.2.5** - Standalone components, functional routing
 - **TypeScript 5.9.2** - Strong typing
 - **RxJS 7.8.0** - Reactive programming
 
 **UI Framework:**
+
 - **Angular Material 21.2.3** - Components (Toolbar, Sidenav, Cards, etc.)
 - **Angular CDK 21.2.3** - Layout utilities
 
 **HTTP & State:**
+
 - **Angular HttpClient** - HTTP interceptors for auth & responses
 - **RxJS Observables** - Reactive state with BehaviorSubject
 
 **Build & Testing:**
+
 - **Angular CLI 21.2.3**
 - **Karma** - Test runner
 - **Jasmine** - Testing framework
 
 **DevOps:**
+
 - **Docker** - Containerization
 - **Nginx** - Production server
 - **Prettier** - Code formatting
@@ -130,23 +138,27 @@ src/
 
 ```typescript
 // main.ts
-bootstrapApplication(AppComponent, appConfig)
+bootstrapApplication(AppComponent, appConfig);
 
 // app.config.ts
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideZonelessChangeDetection(),    // Modern angular, no NgZone
-    provideRouter(routes),                // Functional routing
-    provideAnimationsAsync(),             // Material animations
-    provideHttpClient(withInterceptors([  // HTTP interceptors
-      authInterceptor,
-      responseInterceptor
-    ]))
-  ]
+    provideZonelessChangeDetection(), // Modern angular, no NgZone
+    provideRouter(routes), // Functional routing
+    provideAnimationsAsync(), // Material animations
+    provideHttpClient(
+      withInterceptors([
+        // HTTP interceptors
+        authInterceptor,
+        responseInterceptor,
+      ]),
+    ),
+  ],
 };
 ```
 
 **Key Points:**
+
 - ✅ Zoneless change detection for better performance
 - ✅ Standalone-first (no NgModules)
 - ✅ Functional providers pattern
@@ -179,6 +191,7 @@ Routes structure:
 ```
 
 **Features:**
+
 - Lazy loading with `loadComponent: () => import(...)`
 - Route guards for protection
 - Unsaved changes warning on `/recharge`, `/profile`, `/admin/dashboard`
@@ -186,18 +199,21 @@ Routes structure:
 ### 3. **Guard Layer**
 
 #### `authGuard` - Authentication Check
+
 ```typescript
 // If NOT logged in: redirect to /auth/login (store return URL)
 // If logged in: allow access
 ```
 
 #### `adminGuard` - Authorization Check
+
 ```typescript
 // If logged in AND admin role: allow
 // Else: redirect to /dashboard
 ```
 
 #### `unsavedChangesGuard` - Data Loss Prevention
+
 ```typescript
 // If form has unsaved changes: confirm before navigation
 // Components must implement HasUnsavedChanges interface
@@ -206,7 +222,9 @@ Routes structure:
 ### 4. **Interceptor Layer**
 
 #### `authInterceptor`
+
 **Public Endpoints (NO token):**
+
 - `/api/auth/send-otp`
 - `/api/auth/verify-phone-otp`
 - `/api/operators/detect`
@@ -214,12 +232,14 @@ Routes structure:
 - `/api/plans/` (GET)
 
 **Authenticated Endpoints (WITH token):**
+
 - All other API requests
 - Attaches `Authorization: Bearer {token}` header
 - On 401: Auto-refresh using refresh token
 - On refresh failure: Logout & redirect
 
 #### `responseInterceptor`
+
 ```
 Input:  API Response { success, message, data }
               ↓
@@ -231,6 +251,7 @@ Output: Clean data directly to service
 ```
 
 **Error Handling:**
+
 - 401 → Clear tokens → `/auth/login`
 - 403 → `/error/403`
 - 404 → `/error/404`
@@ -262,13 +283,14 @@ Step 3: Persist & Redirect
 
 ### Token Management
 
-| Token | Type | Location | Duration |
-|-------|------|----------|----------|
-| `accessToken` | Short-lived JWT | localStorage | ~15-30 min |
-| `refreshToken` | Long-lived token | localStorage | ~7 days |
-| `currentUser` | User object (JSON) | localStorage | Session |
+| Token          | Type               | Location     | Duration   |
+| -------------- | ------------------ | ------------ | ---------- |
+| `accessToken`  | Short-lived JWT    | localStorage | ~15-30 min |
+| `refreshToken` | Long-lived token   | localStorage | ~7 days    |
+| `currentUser`  | User object (JSON) | localStorage | Session    |
 
 **Auto-Refresh Flow:**
+
 ```
 1. Extract expiresIn from accessToken response
 2. Schedule refresh 1 minute BEFORE expiry
@@ -294,6 +316,7 @@ Check: authService.isAdmin() → authService.getCurrentUser()?.role === 'ROLE_AD
 ### 1. **AuthService** - Core Authentication
 
 **Methods:**
+
 ```typescript
 // Phone OTP (Primary)
 sendOtp(request: SendOtpRequest): Observable<any>
@@ -324,16 +347,18 @@ logout(): void
 ```
 
 **Observables:**
+
 ```typescript
-currentUser$: Observable<User>  // Emits on login/logout
+currentUser$: Observable<User>; // Emits on login/logout
 ```
 
 **Mock Support:**
+
 ```typescript
 if (environment.useMockApi) {
   // Admin: 8688179553
   // User: any other number
-  return of(mockResponse).pipe(delay(500))
+  return of(mockResponse).pipe(delay(500));
 }
 ```
 
@@ -342,6 +367,7 @@ if (environment.useMockApi) {
 ### 2. **UserService** - Profile Management
 
 **Methods:**
+
 ```typescript
 getProfile(forceRefresh = false): Observable<User>
   // Cache: 5 min TTL via CacheService
@@ -353,6 +379,7 @@ changePassword(request: ChangePasswordRequest): Observable<User>
 ```
 
 **Features:**
+
 - Uses CacheService for response caching
 - Normalizes user objects
 - Updates AuthService on profile changes
@@ -363,6 +390,7 @@ changePassword(request: ChangePasswordRequest): Observable<User>
 ### 3. **OperatorService** - Telecom Operators
 
 **Methods:**
+
 ```typescript
 // Detect operator from mobile number
 detectOperator(mobileNumber: string): Observable<OperatorDetectionResponse>
@@ -384,36 +412,38 @@ deletePlan(id: number): Observable<void>
 ```
 
 **Mock Data Persistence:**
+
 ```typescript
 // Uses localStorage for CRUD operations in mock mode
-localStorage.setItem('omni_operators', JSON.stringify(mockOperators))
-localStorage.setItem('omni_plans', JSON.stringify(mockPlans))
+localStorage.setItem('omni_operators', JSON.stringify(mockOperators));
+localStorage.setItem('omni_plans', JSON.stringify(mockPlans));
 ```
 
 **Data Model:**
+
 ```typescript
 interface Operator {
-  id: number
-  name: string          // "Jio", "Airtel", "Vodafone"
-  code: string          // "JIO", "AIRTEL", etc.
-  isActive: boolean
-  createdAt: string
-  updatedAt: string
+  id: number;
+  name: string; // "Jio", "Airtel", "Vodafone"
+  code: string; // "JIO", "AIRTEL", etc.
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface Plan {
-  id: number
-  operatorId: number
-  operatorName: string
-  name: string          // "Jio 1GB/day 28 days"
-  price: number         // 249
-  validity: number      // 28 (days)
-  data: string          // "1GB/day"
-  description: string
-  category: string      // "DATA", "VOICE", "COMBO"
-  isActive: boolean
-  createdAt: string
-  updatedAt: string
+  id: number;
+  operatorId: number;
+  operatorName: string;
+  name: string; // "Jio 1GB/day 28 days"
+  price: number; // 249
+  validity: number; // 28 (days)
+  data: string; // "1GB/day"
+  description: string;
+  category: string; // "DATA", "VOICE", "COMBO"
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 ```
 
@@ -422,6 +452,7 @@ interface Plan {
 ### 4. **RechargeService** - Recharge Orchestration
 
 **Methods:**
+
 ```typescript
 // Recharge Workflow (Saga Pattern)
 initiateRecharge(request: RechargeRequest): Observable<Recharge>
@@ -438,35 +469,38 @@ getRechargeHistory(): Observable<Recharge[]>
 ```
 
 **Observables:**
+
 ```typescript
-rechargeHistory$: Observable<Recharge[]>  // Emits on history change
+rechargeHistory$: Observable<Recharge[]>; // Emits on history change
 ```
 
 **Mock Persistence:**
+
 ```typescript
 // Recharge history survives page reload via localStorage
-localStorage.setItem('omni_recharges', JSON.stringify(recharges))
+localStorage.setItem('omni_recharges', JSON.stringify(recharges));
 ```
 
 **Data Model:**
+
 ```typescript
 interface Recharge {
-  id: number
-  rechargeId: string             // "RCH-XXXXX"
-  userId: number
-  mobileNumber: string
-  operatorId: number
-  operatorName: string           // "Jio"
-  planId: number
-  planName: string               // "Plan name"
-  amount: number                 // 249 (INR)
-  status: 'INITIATED' | 'PROCESSING' | 'SUCCESS' | 'FAILED'
-  failureReason?: string
-  transactionId: string          // Links to payment system
-  planValidityDays?: number
-  planExpiryDate?: string
-  createdDate: string            // ISO format
-  lastModifiedDate?: string
+  id: number;
+  rechargeId: string; // "RCH-XXXXX"
+  userId: number;
+  mobileNumber: string;
+  operatorId: number;
+  operatorName: string; // "Jio"
+  planId: number;
+  planName: string; // "Plan name"
+  amount: number; // 249 (INR)
+  status: 'INITIATED' | 'PROCESSING' | 'SUCCESS' | 'FAILED';
+  failureReason?: string;
+  transactionId: string; // Links to payment system
+  planValidityDays?: number;
+  planExpiryDate?: string;
+  createdDate: string; // ISO format
+  lastModifiedDate?: string;
 }
 ```
 
@@ -475,6 +509,7 @@ interface Recharge {
 ### 5. **PaymentService** - Razorpay Integration
 
 **Methods:**
+
 ```typescript
 // Step 1: Create Razorpay Order
 createOrder(payload: {
@@ -512,6 +547,7 @@ getTransactionHistory(): Observable<Transaction[]>
 ```
 
 **Razorpay Checkout Flow:**
+
 ```
 1. UI: User clicks "Pay" button
 2. Service: createOrder() → get razorpayOrderId from backend
@@ -523,10 +559,11 @@ getTransactionHistory(): Observable<Transaction[]>
 ```
 
 **Mock Mode:**
+
 ```typescript
 if (environment.useMockApi) {
   // Simulate successful payment
-  return of({ verified: true }).pipe(delay(1000))
+  return of({ verified: true }).pipe(delay(1000));
 }
 ```
 
@@ -535,6 +572,7 @@ if (environment.useMockApi) {
 ### 6. **NotificationService** - Alerts & Notifications
 
 **Methods:**
+
 ```typescript
 // Add local notification (in-app alert)
 addLocalNotification(
@@ -567,23 +605,25 @@ clearOldNotifications(): void
 ```
 
 **Observables:**
+
 ```typescript
-notifications$: Observable<Notification[]>  // Via BehaviorSubject
+notifications$: Observable<Notification[]>; // Via BehaviorSubject
 ```
 
 **Data Model:**
+
 ```typescript
 interface Notification {
-  id: number
-  userId: number
-  title: string           // "Recharge Successful"
-  message: string         // "₹249 added to your Jio account"
-  type: 'IN_APP' | 'EMAIL' | 'SMS'
-  category: string        // "PAYMENT", "SYSTEM", "ALERT"
-  isRead: boolean
-  metadata: any           // Optional contextual data
-  createdDate: string
-  updatedAt: string
+  id: number;
+  userId: number;
+  title: string; // "Recharge Successful"
+  message: string; // "₹249 added to your Jio account"
+  type: 'IN_APP' | 'EMAIL' | 'SMS';
+  category: string; // "PAYMENT", "SYSTEM", "ALERT"
+  isRead: boolean;
+  metadata: any; // Optional contextual data
+  createdDate: string;
+  updatedAt: string;
 }
 ```
 
@@ -592,6 +632,7 @@ interface Notification {
 ### 7. **CacheService** - Smart Caching Layer
 
 **Methods:**
+
 ```typescript
 // Get from cache if exists and not expired
 get<T>(key: string): T | null
@@ -607,19 +648,21 @@ clear(): void
 ```
 
 **Features:**
+
 - **Dual Storage:** Memory cache (fast) + SessionStorage (persistent)
 - **TTL Expiry:** Automatic invalidation after TTL
 - **Fallback:** Checks memory first, then sessionStorage
 - **Development-Friendly:** Disables in mock mode via flag
 
 **Usage Example:**
+
 ```typescript
 // In UserService
-const cached = this.cacheService.get<User>('user_profile')
-if (cached) return of(cached)
+const cached = this.cacheService.get<User>('user_profile');
+if (cached) return of(cached);
 
 // After API call
-this.cacheService.set('user_profile', user, 300000)  // 5 min TTL
+this.cacheService.set('user_profile', user, 300000); // 5 min TTL
 ```
 
 ---
@@ -629,30 +672,32 @@ this.cacheService.set('user_profile', user, 300000)  // 5 min TTL
 All models in `src/app/core/models/`
 
 ### User Model
+
 ```typescript
 interface User {
-  id: number
-  fullName: string
-  email: string
-  mobileNumber: string
-  role: 'ROLE_USER' | 'ROLE_ADMIN'
-  authProvider: 'LOCAL' | 'GOOGLE' | 'PHONE'
-  isActive: boolean
-  createdAt: string
-  updatedAt: string
+  id: number;
+  fullName: string;
+  email: string;
+  mobileNumber: string;
+  role: 'ROLE_USER' | 'ROLE_ADMIN';
+  authProvider: 'LOCAL' | 'GOOGLE' | 'PHONE';
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface AuthResponse {
-  accessToken: string       // JWT for API requests
-  refreshToken: string      // Long-lived refresh token
-  tokenType: string         // "Bearer"
-  expiresIn: number         // Seconds
-  user: User
-  isNewUser?: boolean       // True for new registrations
+  accessToken: string; // JWT for API requests
+  refreshToken: string; // Long-lived refresh token
+  tokenType: string; // "Bearer"
+  expiresIn: number; // Seconds
+  user: User;
+  isNewUser?: boolean; // True for new registrations
 }
 ```
 
 ### Operator Model
+
 ```typescript
 interface Operator { id, name, code, isActive, createdAt, updatedAt }
 interface Plan { id, operatorId, operatorName, name, price, validity, data, ... }
@@ -664,6 +709,7 @@ interface OperatorDetectionResponse {
 ```
 
 ### Recharge Model
+
 ```typescript
 interface Recharge { id, rechargeId, userId, mobileNumber, operatorId, operatorName, planId, planName, amount, status, transactionId, ... }
 interface RechargeRequest { mobileNumber, planId, paymentMethod }
@@ -671,8 +717,20 @@ interface Transaction { id, transactionId, rechargeId, userId, amount, paymentMe
 ```
 
 ### Notification Model
+
 ```typescript
-interface Notification { id, userId, title, message, type, category, isRead, metadata, createdDate, updatedAt }
+interface Notification {
+  id;
+  userId;
+  title;
+  message;
+  type;
+  category;
+  isRead;
+  metadata;
+  createdDate;
+  updatedAt;
+}
 ```
 
 ---
@@ -682,6 +740,7 @@ interface Notification { id, userId, title, message, type, category, isRead, met
 ### Layouts
 
 #### **UserLayoutComponent** (`core/layouts/user-layout/`)
+
 ```
 UserLayout
 ├── MatSideNav (navigation drawer)
@@ -702,6 +761,7 @@ UserLayout
 ```
 
 #### **AdminLayoutComponent** (`core/layouts/admin-layout/`)
+
 ```
 AdminLayout (currently in editor)
 ├── MatSideNav (admin drawer)
@@ -721,6 +781,7 @@ AdminLayout (currently in editor)
 ### Feature Components
 
 #### **LoginComponent** (`features/auth/login/`)
+
 ```
 LoginComponent (Phone OTP Auth)
 ├── Auth Card
@@ -741,6 +802,7 @@ LoginComponent (Phone OTP Auth)
 ```
 
 #### **RechargeComponent** (`features/recharge/`)
+
 ```
 RechargeComponent (3-Step Recharge Saga)
 
@@ -783,6 +845,7 @@ Saga Flow:
 ```
 
 #### **DashboardComponent** (`features/dashboard/`)
+
 ```
 DashboardComponent (User Home)
 ├── Notification Bar (if recent notifications exist)
@@ -812,6 +875,7 @@ DashboardComponent (User Home)
 ```
 
 #### **ProfileComponent** (`features/profile/`)
+
 ```
 ProfileComponent (User Profile Edit)
 ├── Forms
@@ -832,6 +896,7 @@ ProfileComponent (User Profile Edit)
 ```
 
 #### **HistoryComponent** (`features/history/`)
+
 ```
 HistoryComponent (Recharge History)
 ├── Filters/Sorting
@@ -849,6 +914,7 @@ HistoryComponent (Recharge History)
 ```
 
 #### **NotificationsComponent** (`features/notifications/`)
+
 ```
 NotificationsComponent (Notification Center)
 ├── Tabs/Filters
@@ -866,6 +932,7 @@ NotificationsComponent (Notification Center)
 ```
 
 #### **AdminComponent** (`features/admin/`)
+
 ```
 AdminComponent (System Overview)
 ├── System Statistics
@@ -945,7 +1012,7 @@ AdminComponent (System Overview)
    └─ RechargeComponent loads (lazy loaded)
 
 3. Recharge Form (MatStepper)
-   
+
    STEP 1: Enter Number
    ├─ User enters mobile number (mobileNumber field)
    ├─ User clicks "Next"
@@ -967,19 +1034,19 @@ AdminComponent (System Overview)
    ├─ User clicks "Pay ₹{amount}"
    │
    └──► SAGA ORCHESTRATION BEGINS:
-        
+
         Saga Step 1: INITIATE_RECHARGE
         ├─ RechargeService.initiateRecharge({
         │    mobileNumber, operatorId, planId, paymentMethod})
         ├─ Backend: POST /api/recharges
         └─ Response: { rechargeId, status: 'INITIATED', ... }
-        
+
         Saga Step 2: CREATE_ORDER
         ├─ PaymentService.createOrder({
         │    amount, currency: 'INR', rechargeId })
         ├─ Backend: POST /api/payments/process
         └─ Response: { razorpayOrderId, transactionId, ... }
-        
+
         Saga Step 3: RAZORPAY_CHECKOUT
         ├─ PaymentService.openRazorpayCheckout({
         │    orderId: razorpayOrderId,
@@ -990,7 +1057,7 @@ AdminComponent (System Overview)
         ├─ Razorpay processes payment
         ├─ Modal closes with payment details
         └─ Response: { razorpayPaymentId, razorpayOrderId, razorpaySignature }
-        
+
         Saga Step 4: VERIFY_PAYMENT
         ├─ PaymentService.verifyPayment({
         │    razorpayPaymentId,
@@ -999,7 +1066,7 @@ AdminComponent (System Overview)
         ├─ Backend: POST /api/payments/verify
         ├─ Backend verifies Razorpay signature
         └─ Response: { verified: true/false }
-        
+
         If verified: ✅
         │
         ├─ Saga Step 5: COMPLETE_RECHARGE
@@ -1021,7 +1088,7 @@ AdminComponent (System Overview)
            ├─ Amount, Transaction ID, Plan details
            ├─ "Download Receipt" button
            └─ "Return to Dashboard" button
-        
+
         If NOT verified: ❌
         │
         ├─ Saga Step 5: FAIL_RECHARGE (Compensation)
@@ -1122,9 +1189,10 @@ Network Error (timeout, CORS, etc.)
 // Example: RechargeComponent payment failure
 if (!verifyResponse.verified) {
   snackBar.open('Payment verification failed. Retrying...', 'Close', {
-    duration: 5000, horizontalPosition: 'end'
-  })
-  RechargeService.failRecharge(recharge)
+    duration: 5000,
+    horizontalPosition: 'end',
+  });
+  RechargeService.failRecharge(recharge);
   // Optionally retry payment
 }
 ```
@@ -1136,11 +1204,11 @@ if (!verifyResponse.verified) {
 refreshToken().pipe(
   catchError(() => {
     // Refresh token expired → force logout
-    this.logout()
-    router.navigate(['/auth/login'])
-    return EMPTY
-  })
-)
+    this.logout();
+    router.navigate(['/auth/login']);
+    return EMPTY;
+  }),
+);
 ```
 
 ---
@@ -1171,23 +1239,23 @@ Request for data (e.g., user profile)
 ```typescript
 // Default TTL: 5 minutes (300000ms)
 
-cacheService.set('user_profile', userData, 300000)
+cacheService.set('user_profile', userData, 300000);
 // After 5 minutes, this cache key is considered expired
 
 // Manual invalidation
-cacheService.invalidate('user_profile')
+cacheService.invalidate('user_profile');
 // Or force refresh
-userService.getProfile(forceRefresh = true)
+userService.getProfile((forceRefresh = true));
 ```
 
 ### Cache Keys
 
-| Key | Service | TTL | Invalidated On |
-|-----|---------|-----|----------------|
-| `user_profile` | UserService | 5 min | Profile update |
-| `operators_list` | OperatorService | 5 min | Operator CRUD |
-| `operator_plans_{id}` | OperatorService | 5 min | Plan CRUD |
-| `all_users` | UserService | 5 min | User changes |
+| Key                   | Service         | TTL   | Invalidated On |
+| --------------------- | --------------- | ----- | -------------- |
+| `user_profile`        | UserService     | 5 min | Profile update |
+| `operators_list`      | OperatorService | 5 min | Operator CRUD  |
+| `operator_plans_{id}` | OperatorService | 5 min | Plan CRUD      |
+| `all_users`           | UserService     | 5 min | User changes   |
 
 ---
 
@@ -1200,15 +1268,15 @@ userService.getProfile(forceRefresh = true)
 export const environment = {
   production: false,
   apiUrl: 'http://localhost:4200',
-  useMockApi: true  // ← Toggle mock mode
-}
+  useMockApi: true, // ← Toggle mock mode
+};
 
 // src/environments/environment.prod.ts
 export const environment = {
   production: true,
   apiUrl: 'https://api.omnicharge.com',
-  useMockApi: false  // ← Real API in production
-}
+  useMockApi: false, // ← Real API in production
+};
 ```
 
 ### Mock Data Structure
@@ -1264,23 +1332,23 @@ MOCK_ALL_USERS: User[]
 
 if (environment.useMockApi) {
   // Return mock data with simulated delay
-  return of(mockData).pipe(delay(400-800))
+  return of(mockData).pipe(delay(400 - 800));
 }
 
 // Real API call
-return this.http.get<ApiResponse>(url)
+return this.http.get<ApiResponse>(url);
 ```
 
 ### LocalStorage Persistence in Mock Mode
 
 ```typescript
 // Services persist data to localStorage:
-localStorage.setItem('omni_operators', JSON.stringify(operators))
-localStorage.setItem('omni_plans', JSON.stringify(plans))
-localStorage.setItem('omni_recharges', JSON.stringify(recharges))
-localStorage.setItem('omni_transactions', JSON.stringify(transactions))
-localStorage.setItem('omni_notifications', JSON.stringify(notifications))
-localStorage.setItem('omni_users', JSON.stringify(users))
+localStorage.setItem('omni_operators', JSON.stringify(operators));
+localStorage.setItem('omni_plans', JSON.stringify(plans));
+localStorage.setItem('omni_recharges', JSON.stringify(recharges));
+localStorage.setItem('omni_transactions', JSON.stringify(transactions));
+localStorage.setItem('omni_notifications', JSON.stringify(notifications));
+localStorage.setItem('omni_users', JSON.stringify(users));
 
 // Data survives page reloads in dev mode
 // Simulates backend persistence
@@ -1335,55 +1403,63 @@ ng build --configuration production
 
 ## 📦 Dependencies Overview
 
-| Package | Version | Purpose |
-|---------|---------|---------|
-| @angular/core | 21.2.0 | Core Angular framework |
-| @angular/material | 21.2.3 | UI components (Material Design) |
-| @angular/cdk | 21.2.3 | Component Development Kit |
-| @angular/animations | 21.2.5 | Animation support |
-| @angular/router | 21.2.0 | Functional routing |
-| @angular/forms | 21.2.0 | Reactive Forms |
-| rxjs | 7.8.0 | Reactive programming |
-| typescript | 5.9.2 | Type safety |
+| Package             | Version | Purpose                         |
+| ------------------- | ------- | ------------------------------- |
+| @angular/core       | 21.2.0  | Core Angular framework          |
+| @angular/material   | 21.2.3  | UI components (Material Design) |
+| @angular/cdk        | 21.2.3  | Component Development Kit       |
+| @angular/animations | 21.2.5  | Animation support               |
+| @angular/router     | 21.2.0  | Functional routing              |
+| @angular/forms      | 21.2.0  | Reactive Forms                  |
+| rxjs                | 7.8.0   | Reactive programming            |
+| typescript          | 5.9.2   | Type safety                     |
 
 ---
 
 ## 🎓 Key Design Patterns Used
 
 ### 1. **Saga Pattern** (Recharge Workflow)
+
 - Multi-step transaction orchestration
 - Step-by-step state management
 - Compensation on failure
 
 ### 2. **Service Layer Pattern**
+
 - Encapsulation of business logic
 - Reusable services across components
 - Dependency injection
 
 ### 3. **Observable/RxJS Pattern**
+
 - Reactive data streams
 - BehaviorSubject for state management
 - Operators: map, tap, catchError, delay, timeout
 
 ### 4. **Guard Pattern** (Route Protection)
+
 - authGuard: Authentication
 - adminGuard: Authorization
 - unsavedChangesGuard: Data loss prevention
 
 ### 5. **Interceptor Pattern**
+
 - authInterceptor: Token injection + auto-refresh
 - responseInterceptor: Response normalization + error routing
 
 ### 6. **Singleton Pattern** (Services)
+
 - providedIn: 'root' → Single instance app-wide
 - Shared state across components
 
 ### 7. **Caching with TTL**
+
 - Reduces API calls
 - Improves UX performance
 - Automatic expiration
 
 ### 8. **Lazy Loading**
+
 - Components loaded on-demand
 - Smaller initial bundle
 - Faster startup time
@@ -1405,9 +1481,10 @@ ng build --configuration production
 ✅ **Caching** - TTL-based multi-layer cache  
 ✅ **Error Handling** - HTTP error routing + UI feedback  
 ✅ **Mock API** - Development without backend  
-✅ **Saga Pattern** - Complex multi-step transactions  
+✅ **Saga Pattern** - Complex multi-step transactions
 
 **Core User Journeys:**
+
 1. **Authentication** - Phone OTP login
 2. **Recharge** - 3-step form → Razorpay payment → notifications
 3. **Admin** - Operator, plan, user management

@@ -29,7 +29,14 @@ export class RechargeService {
   }
 
   /** Called by the Saga orchestrator with full context */
-  initiateRecharge(request: RechargeRequest & { operatorId?: number; operatorName?: string; planName?: string; amount?: number }): Observable<Recharge> {
+  initiateRecharge(
+    request: RechargeRequest & {
+      operatorId?: number;
+      operatorName?: string;
+      planName?: string;
+      amount?: number;
+    },
+  ): Observable<Recharge> {
     if (environment.useMockApi) {
       const mockRecharge: Recharge = {
         id: Math.floor(Math.random() * 10000),
@@ -43,20 +50,20 @@ export class RechargeService {
         amount: request.amount || 0,
         status: 'INITIATED',
         transactionId: '',
-        createdDate: new Date().toISOString()
+        createdDate: new Date().toISOString(),
       };
       return of(mockRecharge).pipe(delay(400));
     }
-    
+
     // Sanitize payload: Spring Boot backend strictly expects exactly these 4 fields.
     // Extra fields like 'amount' or 'operatorName' will trigger Jackson UnrecognizedPropertyException and return 400 Bad Request.
     const cleanRequest = {
       mobileNumber: request.mobileNumber,
       operatorId: request.operatorId || 1,
       planId: request.planId,
-      paymentMethod: request.paymentMethod
+      paymentMethod: request.paymentMethod,
     };
-    
+
     return this.http.post<any>(this.apiUrl, cleanRequest);
   }
 
@@ -67,7 +74,7 @@ export class RechargeService {
         ...recharge,
         status: 'SUCCESS',
         transactionId,
-        lastModifiedDate: new Date().toISOString()
+        lastModifiedDate: new Date().toISOString(),
       };
       const current = this.rechargeHistory.value;
       this.saveRecharges([completed, ...current]);
@@ -81,7 +88,7 @@ export class RechargeService {
       const failed: Recharge = {
         ...recharge,
         status: 'FAILED',
-        lastModifiedDate: new Date().toISOString()
+        lastModifiedDate: new Date().toISOString(),
       };
       const current = this.rechargeHistory.value;
       this.saveRecharges([failed, ...current]);
@@ -111,7 +118,9 @@ export class RechargeService {
       if (userStr) {
         return JSON.parse(userStr).id || 0;
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     return 0;
   }
 }

@@ -13,20 +13,13 @@
         "@schematics/angular:component": {
           "style": "scss"
         },
-        "@schematics/angular:class": {
-        },
-        "@schematics/angular:directive": {
-        },
-        "@schematics/angular:guard": {
-        },
-        "@schematics/angular:interceptor": {
-        },
-        "@schematics/angular:pipe": {
-        },
-        "@schematics/angular:resolver": {
-        },
-        "@schematics/angular:service": {
-        }
+        "@schematics/angular:class": {},
+        "@schematics/angular:directive": {},
+        "@schematics/angular:guard": {},
+        "@schematics/angular:interceptor": {},
+        "@schematics/angular:pipe": {},
+        "@schematics/angular:resolver": {},
+        "@schematics/angular:service": {}
       },
       "root": "",
       "sourceRoot": "src",
@@ -44,9 +37,7 @@
                 "input": "public"
               }
             ],
-            "styles": [
-              "src/styles.scss"
-            ]
+            "styles": ["src/styles.scss"]
           },
           "configurations": {
             "production": {
@@ -91,11 +82,9 @@
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
             "tsConfig": "tsconfig.spec.json",
-            "polyfills": [
-              "zone.js",
-              "zone.js/testing"
-            ],
+            "polyfills": ["zone.js", "zone.js/testing"],
             "karmaConfig": "karma.conf.js",
+            "codeCoverage": true,
             "inlineStyleLanguage": "scss",
             "assets": [
               {
@@ -103,9 +92,7 @@
                 "input": "public"
               }
             ],
-            "styles": [
-              "src/styles.scss"
-            ],
+            "styles": ["src/styles.scss"],
             "scripts": []
           }
         }

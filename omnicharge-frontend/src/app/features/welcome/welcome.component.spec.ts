@@ -13,9 +13,13 @@ describe('WelcomeComponent', () => {
   let router: Router;
 
   beforeEach(async () => {
-    authServiceSpy = jasmine.createSpyObj('AuthService', ['isLoggedIn', 'isAdmin', 'getCurrentUser', 'getToken'], {
-      currentUser$: { subscribe: () => {} }
-    });
+    authServiceSpy = jasmine.createSpyObj(
+      'AuthService',
+      ['isLoggedIn', 'isAdmin', 'getCurrentUser', 'getToken'],
+      {
+        currentUser$: { subscribe: () => {} },
+      },
+    );
     authServiceSpy.isLoggedIn.and.returnValue(false);
     authServiceSpy.isAdmin.and.returnValue(false);
     authServiceSpy.getCurrentUser.and.returnValue(null);

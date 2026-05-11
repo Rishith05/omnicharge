@@ -14,9 +14,17 @@ import { AuthService } from '../../services/auth.service';
   selector: 'app-admin-layout',
   standalone: true,
   imports: [
-    CommonModule, RouterOutlet, RouterLink, RouterLinkActive,
-    MatToolbarModule, MatSidenavModule, MatListModule,
-    MatIconModule, MatButtonModule, MatBadgeModule, MatMenuModule
+    CommonModule,
+    RouterOutlet,
+    RouterLink,
+    RouterLinkActive,
+    MatToolbarModule,
+    MatSidenavModule,
+    MatListModule,
+    MatIconModule,
+    MatButtonModule,
+    MatBadgeModule,
+    MatMenuModule,
   ],
   template: `
     <mat-sidenav-container class="admin-container">
@@ -65,24 +73,89 @@ import { AuthService } from '../../services/auth.service';
       </mat-sidenav-content>
     </mat-sidenav-container>
   `,
-  styles: [`
-    .admin-container { height: 100vh; }
-    .admin-sidenav { width: 260px; background: #0d1117; border-right: 1px solid rgba(44,182,125,0.2); }
-    .sidenav-header { padding: 24px; border-bottom: 1px solid rgba(44,182,125,0.2); }
-    .logo { display: flex; align-items: center; gap: 12px; }
-    .logo-icon { font-size: 32px; width: 32px; height: 32px; color: var(--accent-teal); }
-    .logo-text { font-size: 20px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.5px; }
-    .nav-list { padding-top: 8px; }
-    .nav-list a { margin: 4px 12px; border-radius: var(--radius-sm); transition: var(--transition); color: var(--text-secondary); }
-    .nav-list a:hover { background: rgba(44,182,125,0.1); color: var(--text-primary); }
-    .active-link { background: rgba(44,182,125,0.15) !important; border-left: 3px solid var(--accent-teal); color: var(--accent-teal) !important; }
-    .nav-divider { height: 1px; background: rgba(44,182,125,0.2); margin: 16px 20px; }
-    .nav-section-label { font-size: 11px; font-weight: 700; color: var(--accent-teal); padding: 0 28px; margin-bottom: 4px; letter-spacing: 1.5px; }
-    .admin-toolbar { background: transparent !important; border-bottom: 1px solid rgba(44,182,125,0.2); color: var(--text-primary); }
-    .toolbar-spacer { flex: 1 1 auto; }
-    .greeting { font-size: 14px; color: var(--accent-teal); margin-right: 8px; font-weight: 600; }
-    .main-content { padding: 24px; min-height: calc(100vh - 64px); background: #16181d; }
-  `]
+  styles: [
+    `
+      .admin-container {
+        height: 100vh;
+      }
+      .admin-sidenav {
+        width: 260px;
+        background: #0d1117;
+        border-right: 1px solid rgba(44, 182, 125, 0.2);
+      }
+      .sidenav-header {
+        padding: 24px;
+        border-bottom: 1px solid rgba(44, 182, 125, 0.2);
+      }
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .logo-icon {
+        font-size: 32px;
+        width: 32px;
+        height: 32px;
+        color: var(--accent-teal);
+      }
+      .logo-text {
+        font-size: 20px;
+        font-weight: 800;
+        color: var(--text-primary);
+        letter-spacing: -0.5px;
+      }
+      .nav-list {
+        padding-top: 8px;
+      }
+      .nav-list a {
+        margin: 4px 12px;
+        border-radius: var(--radius-sm);
+        transition: var(--transition);
+        color: var(--text-secondary);
+      }
+      .nav-list a:hover {
+        background: rgba(44, 182, 125, 0.1);
+        color: var(--text-primary);
+      }
+      .active-link {
+        background: rgba(44, 182, 125, 0.15) !important;
+        border-left: 3px solid var(--accent-teal);
+        color: var(--accent-teal) !important;
+      }
+      .nav-divider {
+        height: 1px;
+        background: rgba(44, 182, 125, 0.2);
+        margin: 16px 20px;
+      }
+      .nav-section-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--accent-teal);
+        padding: 0 28px;
+        margin-bottom: 4px;
+        letter-spacing: 1.5px;
+      }
+      .admin-toolbar {
+        background: transparent !important;
+        border-bottom: 1px solid rgba(44, 182, 125, 0.2);
+        color: var(--text-primary);
+      }
+      .toolbar-spacer {
+        flex: 1 1 auto;
+      }
+      .greeting {
+        font-size: 14px;
+        color: var(--accent-teal);
+        margin-right: 8px;
+        font-weight: 600;
+      }
+      .main-content {
+        padding: 24px;
+        min-height: calc(100vh - 64px);
+        background: #16181d;
+      }
+    `,
+  ],
 })
 export class AdminLayoutComponent {
   constructor(public authService: AuthService) {}

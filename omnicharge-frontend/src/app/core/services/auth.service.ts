@@ -11,7 +11,7 @@ import {
   ForgotPasswordRequest,
   VerifyOtpRequest,
   ResetPasswordRequest,
-  User
+  User,
 } from '../models/user.model';
 import { MOCK_AUTH_RESPONSE, MOCK_USER, MOCK_ADMIN } from './mock-data';
 
@@ -24,7 +24,10 @@ export class AuthService {
   // Token refresh timer
   private refreshTimerId: any = null;
 
-  constructor(private http: HttpClient, private router: Router) {
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+  ) {
     try {
       const stored = localStorage.getItem('user');
       if (stored && stored !== 'undefined' && stored !== 'null') {
@@ -58,7 +61,7 @@ export class AuthService {
     }
     return this.http.get<string>(`${this.apiUrl}/dev-otp/${mobileNumber}`).pipe(
       timeout(5000),
-      catchError(() => of(null))
+      catchError(() => of(null)),
     );
   }
 
@@ -68,17 +71,24 @@ export class AuthService {
       const isAdmin = request.mobileNumber === '8688179553';
       const mockUser = isAdmin
         ? { ...MOCK_ADMIN, mobileNumber: request.mobileNumber }
-        : { ...MOCK_USER, mobileNumber: request.mobileNumber, fullName: request.fullName || 'Demo User' };
+        : {
+            ...MOCK_USER,
+            mobileNumber: request.mobileNumber,
+            fullName: request.fullName || 'Demo User',
+          };
       const mockRes: AuthResponse = {
         ...MOCK_AUTH_RESPONSE,
         user: mockUser,
-        isNewUser: false
+        isNewUser: false,
       };
-      return of(mockRes).pipe(delay(500), tap(res => this.handleAuth(res)));
+      return of(mockRes).pipe(
+        delay(500),
+        tap((res) => this.handleAuth(res)),
+      );
     }
     return this.http.post<AuthResponse>(`${this.apiUrl}/verify-phone-otp`, request).pipe(
       timeout(10000),
-      tap(res => this.handleAuth(res))
+      tap((res) => this.handleAuth(res)),
     );
   }
 
@@ -88,11 +98,14 @@ export class AuthService {
 
   googleLogin(request: GoogleAuthRequest): Observable<AuthResponse> {
     if (environment.useMockApi) {
-      return of(MOCK_AUTH_RESPONSE).pipe(delay(500), tap(res => this.handleAuth(res)));
+      return of(MOCK_AUTH_RESPONSE).pipe(
+        delay(500),
+        tap((res) => this.handleAuth(res)),
+      );
     }
     return this.http.post<AuthResponse>(`${this.apiUrl}/google`, request).pipe(
       timeout(10000),
-      tap(res => this.handleAuth(res))
+      tap((res) => this.handleAuth(res)),
     );
   }
 
@@ -128,7 +141,10 @@ export class AuthService {
   /** Refresh access token using refresh token from localStorage */
   refreshToken(): Observable<AuthResponse> {
     if (environment.useMockApi) {
-      return of(MOCK_AUTH_RESPONSE).pipe(delay(200), tap(res => this.handleAuth(res)));
+      return of(MOCK_AUTH_RESPONSE).pipe(
+        delay(200),
+        tap((res) => this.handleAuth(res)),
+      );
     }
     const refreshToken = localStorage.getItem('refreshToken');
     if (!refreshToken) {
@@ -136,12 +152,12 @@ export class AuthService {
       return EMPTY;
     }
     return this.http.post<AuthResponse>(`${this.apiUrl}/refresh-token`, { refreshToken }).pipe(
-      tap(res => this.handleAuth(res)),
+      tap((res) => this.handleAuth(res)),
       catchError(() => {
         // Refresh token expired or invalid — force logout
         this.logout();
         return EMPTY;
-      })
+      }),
     );
   }
 
@@ -214,14 +230,14 @@ export class AuthService {
 
   private handleAuth(res: any): void {
     const authData = res.data ? res.data : res;
-    
+
     if (authData.accessToken) {
       localStorage.setItem('accessToken', authData.accessToken);
     }
     if (authData.refreshToken) {
       localStorage.setItem('refreshToken', authData.refreshToken);
     }
-    
+
     let userData: User;
     if (authData.user) {
       userData = authData.user;
@@ -231,14 +247,16 @@ export class AuthService {
         fullName: authData.fullName || '',
         email: authData.email || '',
         mobileNumber: authData.mobileNumber || '',
-        role: authData.role?.startsWith('ROLE_') ? authData.role : `ROLE_${authData.role || 'USER'}`,
+        role: authData.role?.startsWith('ROLE_')
+          ? authData.role
+          : `ROLE_${authData.role || 'USER'}`,
         authProvider: authData.authProvider || 'PHONE',
         isActive: true,
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
     }
-    
+
     localStorage.setItem('user', JSON.stringify(userData));
     this.currentUserSubject.next(userData);
 

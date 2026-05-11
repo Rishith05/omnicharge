@@ -12,9 +12,13 @@ describe('UserLayoutComponent', () => {
   let fixture: ComponentFixture<UserLayoutComponent>;
 
   beforeEach(async () => {
-    const authSpy = jasmine.createSpyObj('AuthService', ['getCurrentUser', 'isLoggedIn', 'isAdmin', 'logout'], {
-      currentUser$: new BehaviorSubject(null)
-    });
+    const authSpy = jasmine.createSpyObj(
+      'AuthService',
+      ['getCurrentUser', 'isLoggedIn', 'isAdmin', 'logout'],
+      {
+        currentUser$: new BehaviorSubject(null),
+      },
+    );
     authSpy.getCurrentUser.and.returnValue({ fullName: 'User' });
     authSpy.isLoggedIn.and.returnValue(true);
     authSpy.isAdmin.and.returnValue(false);
@@ -22,7 +26,9 @@ describe('UserLayoutComponent', () => {
     await TestBed.configureTestingModule({
       imports: [UserLayoutComponent, NoopAnimationsModule],
       providers: [
-        provideRouter([]), provideHttpClient(), provideHttpClientTesting(),
+        provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
         { provide: AuthService, useValue: authSpy },
       ],
     }).compileComponents();
@@ -31,5 +37,7 @@ describe('UserLayoutComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => { expect(component).toBeTruthy(); });
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
 });

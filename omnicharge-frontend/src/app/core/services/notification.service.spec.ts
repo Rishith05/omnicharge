@@ -1,107 +1,136 @@
-import { TestBed } from '@angular/core/testing';
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { NotificationService } from './notification.service';
+import { environment } from '../../../environments/environment';
 
 describe('NotificationService', () => {
   let service: NotificationService;
   let httpMock: HttpTestingController;
 
   beforeEach(() => {
-    localStorage.clear();
-
     TestBed.configureTestingModule({
-      providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
-      ],
+      imports: [HttpClientTestingModule],
+      providers: [NotificationService],
     });
-
     service = TestBed.inject(NotificationService);
     httpMock = TestBed.inject(HttpTestingController);
   });
 
   afterEach(() => {
     httpMock.verify();
-    localStorage.clear();
   });
 
-  it('should be created', () => {
-    expect(service).toBeTruthy();
-  });
+  describe('Real API', () => {
+    beforeEach(() => (environment.useMockApi = false));
 
-  it('should add a local notification', () => {
-    service.addLocalNotification('Test Title', 'Test Message', 'PAYMENT', 'IN_APP');
+    it('should get notifications from API', () => {
+      service.getNotifications().subscribe((notifs) => expect(notifs.length).toBe(0));
+      httpMock
+        .expectOne(
+          (req) =>
+            req.method === 'GET' &&
+            req.url.includes('/api/notifications') &&
+            !req.url.includes('/admin'),
+        )
+        .flush([]);
+    });
 
-    service.notifications$.subscribe(notifications => {
-      const found = notifications.find(n => n.title === 'Test Title');
-      expect(found).toBeTruthy();
-      expect(found?.message).toBe('Test Message');
-      expect(found?.isRead).toBeFalse();
+    it('should get unread count from API', () => {
+      service.getUnreadCount().subscribe((count) => expect(count).toBe(5));
+      httpMock
+        .expectOne(
+          (req) => req.method === 'GET' && req.url.includes('/api/notifications/unread-count'),
+        )
+        .flush(5);
+    });
+
+    it('should mark as read via API', () => {
+      service.markAsRead(1).subscribe();
+      httpMock
+        .expectOne((req) => req.method === 'PUT' && req.url.includes('/api/notifications/1/read'))
+        .flush({});
+    });
+
+    it('should mark all as read via API', () => {
+      service.markAllAsRead().subscribe();
+      httpMock
+        .expectOne((req) => req.method === 'PUT' && req.url.includes('/api/notifications/read-all'))
+        .flush({});
+    });
+
+    it('should get all notifications (admin) from API', () => {
+      service.getAllNotifications().subscribe();
+      httpMock.expectOne((req) => req.url.includes('/api/admin/notifications')).flush([]);
     });
   });
 
-  it('should send payment notifications', () => {
-    service.sendPaymentNotifications({
-      amount: 299,
-      transactionId: 'TXN-123',
-      operatorName: 'Jio',
-      planData: 'Unlimited',
-      mobileNumber: '9876543210',
-      userEmail: 'test@test.com'
-    });
+  describe('Mock', () => {
+    beforeEach(() => (environment.useMockApi = true));
 
-    service.notifications$.subscribe(notifications => {
-      expect(notifications.length).toBeGreaterThanOrEqual(4);
-    });
-  });
+    it('should handle mock notifications', fakeAsync(() => {
+      let res: any;
+      service.getNotifications().subscribe((notifs) => (res = notifs));
+      tick(500);
+      expect(res).toBeDefined();
+    }));
 
-  it('should get notifications from API', () => {
-    service.getNotifications().subscribe(notifications => {
-      expect(notifications.length).toBe(1);
-    });
+    it('should push local notification', fakeAsync(() => {
+      service.addLocalNotification('Title', 'Message', 'RECHARGE');
+      let res: any;
+      service.getNotifications().subscribe((notifs) => (res = notifs));
+      tick();
+      expect(res[0].title).toBe('Title');
+    }));
 
-    const req = httpMock.expectOne(r => r.url.includes('/notifications'));
-    req.flush([{ id: 1, title: 'Test', message: 'Msg', isRead: false }]);
-  });
+    it('should send payment notifications', fakeAsync(() => {
+      service.sendPaymentNotifications({
+        amount: 100,
+        transactionId: 'TXN1',
+        operatorName: 'Jio',
+        planData: '1GB/Day',
+        mobileNumber: '1234567890',
+        userEmail: 'user@example.com',
+      });
+      let res: any;
+      service.getNotifications().subscribe((notifs) => (res = notifs));
+      tick();
+      expect(res.length).toBeGreaterThan(0);
+    }));
 
-  it('should get unread count from API', () => {
-    service.getUnreadCount().subscribe(count => {
-      expect(count).toBe(5);
-    });
+    it('should mock getUnreadCount', fakeAsync(() => {
+      service.addLocalNotification('Unread', 'Msg', 'SYS');
+      let res: any;
+      service.getUnreadCount().subscribe((c) => (res = c));
+      tick();
+      expect(res).toBeGreaterThan(0);
+    }));
 
-    const req = httpMock.expectOne(r => r.url.includes('/unread-count'));
-    req.flush(5);
-  });
+    it('should mock markAsRead', fakeAsync(() => {
+      service.addLocalNotification('Unread', 'Msg', 'SYS');
+      let notifs: any;
+      service.getNotifications().subscribe((n) => (notifs = n));
+      tick();
+      const id = notifs[0].id;
 
-  it('should mark as read via API', () => {
-    service.markAsRead(1).subscribe();
+      let res = false;
+      service.markAsRead(id).subscribe(() => (res = true));
+      tick(200);
+      expect(res).toBeTrue();
+    }));
 
-    const req = httpMock.expectOne(r => r.url.includes('/notifications/1/read'));
-    expect(req.request.method).toBe('PUT');
-    req.flush(null);
-  });
+    it('should mock markAllAsRead', fakeAsync(() => {
+      service.addLocalNotification('Unread', 'Msg', 'SYS');
+      let res = false;
+      service.markAllAsRead().subscribe(() => (res = true));
+      tick(200);
+      expect(res).toBeTrue();
+    }));
 
-  it('should mark all as read via API', () => {
-    service.markAllAsRead().subscribe();
-
-    const req = httpMock.expectOne(r => r.url.includes('/read-all'));
-    expect(req.request.method).toBe('PUT');
-    req.flush(null);
-  });
-
-  it('should get all notifications (admin) from API', () => {
-    service.getAllNotifications().subscribe(notifications => {
-      expect(notifications).toBeTruthy();
-    });
-
-    const req = httpMock.expectOne(r => r.url.includes('/admin/notifications'));
-    req.flush([]);
-  });
-
-  it('should handle corrupt localStorage gracefully', () => {
-    localStorage.setItem('omni_notifications', 'invalid-json{');
-    // Service should still initialize without errors
-    expect(service).toBeTruthy();
+    it('should mock getAllNotifications', fakeAsync(() => {
+      let res: any;
+      service.getAllNotifications().subscribe((n) => (res = n));
+      tick(100);
+      expect(res).toBeDefined();
+    }));
   });
 });

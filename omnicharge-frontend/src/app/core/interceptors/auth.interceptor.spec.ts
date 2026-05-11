@@ -12,9 +12,13 @@ describe('authInterceptor', () => {
   let authServiceSpy: jasmine.SpyObj<AuthService>;
 
   beforeEach(() => {
-    authServiceSpy = jasmine.createSpyObj('AuthService', ['getToken', 'refreshToken', 'logout', 'isLoggedIn'], {
-      currentUser$: { subscribe: () => {} }
-    });
+    authServiceSpy = jasmine.createSpyObj(
+      'AuthService',
+      ['getToken', 'refreshToken', 'logout', 'isLoggedIn'],
+      {
+        currentUser$: { subscribe: () => {} },
+      },
+    );
 
     TestBed.configureTestingModule({
       providers: [

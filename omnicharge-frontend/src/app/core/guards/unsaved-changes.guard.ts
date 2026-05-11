@@ -16,7 +16,7 @@ export interface HasUnsavedChanges {
 export const unsavedChangesGuard: CanDeactivateFn<HasUnsavedChanges> = (component) => {
   if (component.hasUnsavedChanges && component.hasUnsavedChanges()) {
     return confirm(
-      'You have unsaved changes!\n\nDo you want to discard your changes and leave this page?'
+      'You have unsaved changes!\n\nDo you want to discard your changes and leave this page?',
     );
   }
   return true;
